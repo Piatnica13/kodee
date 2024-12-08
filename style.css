@@ -1,24 +1,208 @@
-@media screen and (max-width: 500px){
-  .img{
-    display: none;
+body{
+  margin: 0px;
+  padding: 0px;
+  display: flex;
+  background-color: #ffe4e9;
+}
+@media screen and (min-width: 1920px) {
+  #contenerMenu{
+    width: 100% !important;
+    max-width: 2500px !important;
+  }
+  #PodMenu{
+    max-width: 2500px !important;
   }
 }
+
+@media screen and (max-width: 768px){
+  
+  .hi{
+    display: none;
+  }
+  .img{
+    width: 50px !important;
+  }
+  #rihgt, #left{
+    display: flex;
+    align-items: center;
+    gap: 5px !important;
+    padding: 0px 3% 0px 0px !important; /*!important более высокйий приоритет*/
+  }
+  #rihgt{
+    padding: 0px 82px 0px 3% !important;
+  }
+  .nav-container .checkbox {
+    position: absolute;
+    display: block;
+    height: 40px !important;
+    width: 40px !important;
+    z-index: 5;
+    opacity: 0;
+    cursor: pointer;
+  }
+  .hamburger-lines {
+    display: block;
+    height: 39px !important;
+    width: 50px !important;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .hamburger-lines .line  {
+    display: block;
+    height: 5px !important;
+    width: 100%;
+    border-radius: 15px;
+    background: #0e2431;
+  }
+  #PodMenu{
+    display: none;
+  }
+  #PodMenuPh.open{
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
+@media screen and (max-width: 1366px){
+  #strelkaMenuOp{
+    left: 125px !important;
+  }
+  #strelkaMenuOp.open{
+    left: 125px !important;
+  }
+}
+
+@media screen and (max-width: 1024px){
+  #strelkaMenuOp{
+    left: 100px !important;
+  }
+  #strelkaMenuOp.open{
+    left: 100px !important;
+  }
+}
+
+#MenuFixed{
+  position: fixed;
+  width: 100%;
+  z-index: 10;
+}
+/*настройки под меню для телефонов*/
+#PodMenuPh{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  top: 80px;
+  overflow: hidden;
+  pointer-events: none;
+  height: 0px;
+  opacity: 0;
+  transition: opacity 0.3s linear, transform 0.3s linear;
+  transform: translateY(0px);
+}
+#PodMenuPh.open{
+  opacity: 1;
+  transform: translateY(-20px);
+}
+.PodTextPh{
+  font-size: 40px;
+  margin: 10px;
+  text-decoration: none;
+  color: black;
+}
+.PodTextDiv{
+  margin: 10px;
+}
+
+/*настройки под меню*/
+#PodMenu{
+  background-color: #ffe4e9;
+  position: relative;
+  bottom: 0px;
+  height: 0px;
+  width: 100%;
+  overflow: hidden; /* Скрытие содержимого при уменьшении высоты */
+  transition: all 0.3s ease-in-out;
+  border-bottom: black 2px solid;  
+  z-index: 1;
+}
+#PodLeft{
+  width: 330px;
+  margin-top: 10px;
+}
+#PodLeft::before {
+  content: "";
+  position: absolute;
+  top: 50%; /* Ставим в центр */
+  left: 330px;/* Привязываем к правой стороне */
+  transform: translateY(-50%); /* Смещаем вверх на половину высоты */
+  width: 1px; /* Толщина борта */
+  height: 100%; /* Общая высота борта (50px вверх и 50px вниз от центра) */
+  background-color: rgb(237, 208, 208); /* Цвет борта */
+}
+.PodNazMenu{
+  width: 310px;
+  padding: 10px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+.PodNazMenu:hover{
+  background-color: #ffd0d9;
+}
+.PodBox{
+  align-items: center;
+  display: flex;
+  flex-direction: row;
+}
+.PodText{
+  color: black;
+  font-size: 20;
+  font-family: Arial, Helvetica, sans-serif;
+  text-decoration: none;
+}
+.Podimg{
+  width: 30px;
+  position: relative;
+  margin-right: 20px;
+  margin-left: 30px;
+}
+.Gimg{
+  width: 15px;
+  height: 17.5px;
+  position: relative;
+  transform: rotate(-90deg);
+}
+#spisokUl{
+  padding: 0px;
+  margin: 0px;
+}
+
 /*настройки меню*/
 #contenerMenu{
+  background-color: #ffe4e9;
   display: flex;
   flex-direction: row; 
   justify-content: space-between; 
+  align-items: center;
   width: 100%;
-  max-width: 1920px;
-  min-height: 100px;
-  box-shadow: 0px 1px 0px 0px;
+  height: 100px;
+  transition: all 0.2s ease-in-out;
 }
 #rihgt, #left{
   display: flex;
   justify-self: start;
   align-items: center;
   gap: 25px;
-  padding:0px 5% 0px 2%;
+}
+#rihgt{
+  padding:0px 0% 0px 5.7%;
+}
+#left{
+  padding:0px 8% 0px 0%;
 }
 /*настройки иконок меню*/
 #num{
@@ -29,9 +213,14 @@
 #strelka{
   position: relative;
   bottom: -1.3px;
-  transition: transform 0.45s ease-in-out;
+  transition: all 0.45s ease-in-out;
   width: 15px;
 }
+
+#checkboxx:hover ~ #strelka{
+  scale: 1.15;
+}
+
 #checkboxx{
   position: absolute;
   display: block;
@@ -50,6 +239,7 @@
   margin: 5px;
 }
 .logo{
+  background-color: #ffe4e9;
   width: 160px;
 }
 nav ul li{
@@ -61,7 +251,7 @@ nav ul li{
   font-family: Arial, Helvetica, sans-serif;
   text-decoration: none;
 }
-  /*Бургур меню*/
+  /*БУРГЕР МЕНЮ*/
 .nav-container .checkbox {
   position: absolute;
   display: block;
@@ -75,7 +265,6 @@ nav ul li{
   display: block;
   height: 29px;
   width: 37.5px;
-  z-index: 2;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -102,7 +291,15 @@ nav ul li{
   transform-origin: 0% 100%;
   transition: transform 0.4s ease-in-out;
 }
+/*при навидении на бургер меню 1 и 3 линия меняют положение по Y*/
+.nav-container input[type="checkbox"]:hover ~ .hamburger-lines .line1{
+  transform: translateY(-3px);
+}
 
+.nav-container input[type="checkbox"]:hover ~ .hamburger-lines .line3{
+  transform: translateY(3px);
+}
+/*при нажатии 1 и 3 линия меняют свой угол, а 2 исчезает*/
 .nav-container input[type="checkbox"]:checked ~ .hamburger-lines .line1 {
   transform: rotate(45deg);
 }
@@ -114,30 +311,40 @@ nav ul li{
 .nav-container input[type="checkbox"]:checked ~ .hamburger-lines .line3 {
   transform: rotate(-45deg);
 }
+#checkboxMain:hover{
+  background-color: red;
+}
+/*выпадающее меню с номером*/
 #strelkaMenuOp{
+  position: absolute;
+  left: 150px;
   transform: translateY(-20px);
-  width: 375px;
+  width: 230px;
+  height: 0px;
   border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   overflow: hidden;
   opacity: 0;
+  z-index: 5;
   transition: opacity 0.45s ease, transform 0.45s ease, visibility 0.45s ease;
-  z-index: 10;
+  pointer-events: none;
 }
 #strelkaMenuOp.open{
   opacity: 1;
-  visibility: visible;
   transform:translateY(0);
+  position: absolute;
+  left: 150px;
+  z-index: 5;
+  pointer-events: auto;
+  transition: opacity 0.45s ease, transform 0.45s ease, visibility 0.45s ease;
 }
 
 #strelkaMenu{
   display: flex;
   width: 210px;
   flex-direction: row;
-  background-color: rgb(255, 195, 195);
+  background-color: #ffd0d9;
   position: relative;
   top: -35px;
-  left: 70px;
   padding: 10px;
   border-radius: 5px;
 
@@ -157,10 +364,10 @@ nav ul li{
   background-color: transparent;
   border-left: 7.5px solid transparent;
   border-right: 7.5px solid transparent;
-  border-bottom: 15px solid rgb(255, 195, 195);
+  border-bottom: 15px solid #ffd0d9;;
   border-radius: 0;
   position: relative;
-  left: 175px;
+  left: 105px;
   bottom: 15px;
 }
 #NumPhone{
@@ -171,4 +378,12 @@ nav ul li{
   position: relative;
   right: 7px;
   bottom: 5px;
+}
+#Body{
+  position: absolute;
+  top: 100px;
+  z-index: 0;
+  width: 100%;
+  height: 2000px;
+  transition: opacity 0.3s linear;
 }
