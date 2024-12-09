@@ -12,6 +12,9 @@ body{
   #PodMenu{
     max-width: 2500px !important;
   }
+  #rihgt{
+    width: 300px !important;
+  }
 }
 
 @media screen and (max-width: 768px){
@@ -22,20 +25,11 @@ body{
   .img{
     width: 50px !important;
   }
-  #rihgt, #left{
-    display: flex;
-    align-items: center;
-    gap: 5px !important;
-    padding: 0px 3% 0px 0px !important; /*!important более высокйий приоритет*/
-  }
-  #rihgt{
-    padding: 0px 82px 0px 3% !important;
-  }
   .nav-container .checkbox {
     position: absolute;
     display: block;
-    height: 40px !important;
-    width: 40px !important;
+    height: 45px !important;
+    width: 45px !important;
     z-index: 5;
     opacity: 0;
     cursor: pointer;
@@ -63,14 +57,31 @@ body{
     opacity: 1;
     pointer-events: auto;
   }
+  #contenerMenu{
+    height: 86px !important;
+  }
+  #left{
+    gap: 10px !important;
+  }
 }
-
+@media screen and (max-width: 450px) {
+  #sumka{
+    display: none;
+  }
+  #rihgt, #left{
+    width: 60px !important;
+    gap: 0px !important;
+  }
+}
 @media screen and (max-width: 1366px){
   #strelkaMenuOp{
     left: 125px !important;
   }
   #strelkaMenuOp.open{
     left: 125px !important;
+  }
+  #rihgt{
+    width: 350px !important;
   }
 }
 
@@ -80,6 +91,12 @@ body{
   }
   #strelkaMenuOp.open{
     left: 100px !important;
+  }
+  #left{
+    width: 223px !important;
+  }
+  #rihgt{
+    width: 223px !important;
   }
 }
 
@@ -186,23 +203,26 @@ body{
   background-color: #ffe4e9;
   display: flex;
   flex-direction: row; 
-  justify-content: space-between; 
+  justify-content: space-around; 
   align-items: center;
   width: 100%;
   height: 100px;
   transition: all 0.2s ease-in-out;
 }
-#rihgt, #left{
-  display: flex;
-  justify-self: start;
-  align-items: center;
-  gap: 25px;
-}
 #rihgt{
-  padding:0px 0% 0px 5.7%;
+  display: flex;
+  justify-content: start;
+  align-items: center;
+  width: 223px !important;
+  height: 50px;
 }
 #left{
-  padding:0px 8% 0px 0%;
+  display: flex;
+  justify-content: end;
+  align-items: center;
+  width: 223px;
+  height: 50px;
+  gap: 28px;
 }
 /*настройки иконок меню*/
 #num{
@@ -220,13 +240,15 @@ body{
 #checkboxx:hover ~ #strelka{
   scale: 1.15;
 }
-
+#divStrelka{
+  position: relative;
+  left: 23px;
+}
 #checkboxx{
   position: absolute;
-  display: block;
+  display: flex;
   height: 26px;
   width: 26px;
-  top: 40px;
   z-index: 5;
   opacity: 0;
   cursor: pointer;
@@ -242,6 +264,10 @@ body{
   background-color: #ffe4e9;
   width: 160px;
 }
+#divLogo{
+  position: relative;
+  top: 5px
+}
 nav ul li{
   list-style: none;
 }
@@ -252,11 +278,15 @@ nav ul li{
   text-decoration: none;
 }
   /*БУРГЕР МЕНЮ*/
+
 .nav-container .checkbox {
   position: absolute;
+  top: 27.5px;
+
   display: block;
-  height: 32px;
-  width: 32px;
+  align-items: center;
+  height: 42px;
+  width: 42px;
   z-index: 5;
   opacity: 0;
   cursor: pointer;
@@ -381,9 +411,10 @@ nav ul li{
 }
 #Body{
   position: absolute;
-  top: 100px;
+  top: 83px;
   z-index: 0;
   width: 100%;
   height: 2000px;
   transition: opacity 0.3s linear;
+  margin: 0px;
 }
