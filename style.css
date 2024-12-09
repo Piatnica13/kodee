@@ -57,9 +57,6 @@ body{
     opacity: 1;
     pointer-events: auto;
   }
-  #contenerMenu{
-    height: 86px !important;
-  }
   #left{
     gap: 10px !important;
   }
@@ -263,10 +260,6 @@ body{
 .logo{
   background-color: #ffe4e9;
   width: 160px;
-}
-#divLogo{
-  position: relative;
-  top: 5px
 }
 nav ul li{
   list-style: none;
