@@ -1,68 +1,113 @@
-let checkboxSubmenu1 = document.querySelector("#checkboxx");
-let divSrtelkaMenu = document.querySelector("#strelkaMenuOp");
-let chet = true;
-checkboxSubmenu1.addEventListener('click', () =>{
-    divSrtelkaMenu.classList.toggle('open');
-    if(chet == true){
-        divSrtelkaMenu.style.height = "100px";
-        chet = false;
-    }
-    else{
-        interval2 = setInterval(()=>{
-            divSrtelkaMenu.style.height = "0px";
-            clearInterval(interval2)
+let MainContener = document.querySelector('#Body');
+document.addEventListener("DOMContentLoaded", () => {
+    fetch('/menu/index.html')
+    .then(response => response.text())
+    .then(html => {
+        document.getElementById('menu-placeholder').innerHTML = html;
+        // После загрузки меню подключаем script.js
+        const script = document.createElement('script');
+        script.src = '/menu/script.js';
+        document.body.appendChild(script);
+        //меню
+        let menu = document.querySelector("#MenuFixed");
+        
+        setTimeout(() => {
+            menu.classList.add("visible");
+            MainContener.style.transition = `opacity 1s linear`;
+            MainContener.style.opacity = "1";
+            setTimeout(()=>{
+                MainContener.style.transition = `opacity 0.3s linear`;
+            }, 1000);
         }, 300);
-        chet = true;
-    }
+        
+        const links = document.querySelectorAll("nav a");
+        links.forEach(link => {
+            link.addEventListener("click", (e) => {
+                e.preventDefault(); // Отключаем мгновенный переход
+                const href = link.getAttribute("href");
+                
+                // Прячем меню
+                MainContener.style.transition = `opacity 0.6s linear`;
+                MainContener.style.opacity = "0";
+                menu.classList.remove("visible");
+                menu.classList.add("hidden");
+                // Ждем окончания анимации и затем переходим
+                setTimeout(() => {
+                    MainContener.style.transition = `opacity 0.3s linear`;
+                    window.location.href = href; // Переход на новую страницу
+                }, 600);
+            });
+        });
+        script.onload = () => {
+            // Этот код выполнится после загрузки script.js
+            let ContenerMenu = document.querySelector("#contenerMenu");
+            let Logo = document.querySelector("#logo");
+            let checkBox = document.querySelector("#checkboxMain");
+            checkBox.addEventListener('click', ()=>{
+                if (checkBox.checked && window.scrollY === 0){
+                    ContenerMenu.style.backgroundColor = ' #ffe4e9';
+                }
+                else{
+                    ContenerMenu.style.backgroundColor = 'transparent';
+                    Logo.style.backgroundColor = 'transparent';
+                }
+            });
+            const handleScroll = () => {
+                if (window.scrollY === 0) {
+                    // Если в начале страницы
+                    ContenerMenu.style.backgroundColor = 'transparent';
+                    Logo.style.backgroundColor = 'transparent';
+                    
+                } else {
+                    // Если страница прокручена
+                    ContenerMenu.style.backgroundColor = ' #ffe4e9';
+                }
+            };
+            // Отслеживаем скролл
+            window.addEventListener('scroll', handleScroll);
+            
+            // Выполняем функцию сразу, чтобы проверить состояние при загрузке
+            handleScroll();
+        };
+        AOS.init();
+    })
+    .catch(error => console.error('Ошибка загрузки меню:', error));
 });
-let checkboxMain = document.querySelector("#checkboxMain");
-let PodMenu = document.querySelector("#PodMenu");
-let MainMenu = document.querySelector('#contenerMenu')
-let PodMenuPh = document.querySelector('#PodMenuPh')
-PodMenuPh.classList.toggle('open');
-  
-let chetPodMenu = false;
-let body = document.querySelector('#Body');
-let PodTextPh = document.querySelector('.PodTextPh')
 
-checkboxMain.addEventListener('click', checkboxmainn) 
-function checkboxmainn(){
-    if(chetPodMenu == false){
-        PodMenu.style.height = `360px`;
-        chetPodMenu = true;
-        if (window.innerWidth <= 768){
-            body.style.opacity =  "0";
-            interval5 = setTimeout(()=>{
-                PodMenuPh.classList.toggle('open');
-            }, 200)
-            PodMenuPh.style.height = "auto";
-        }
-    }
-    else{
-        chetPodMenu = false;
-        PodMenu.style.height = `0px`;
-        if (window.innerWidth <= 768){
-            PodMenuPh.classList.toggle('open');
-            body.style.opacity =  "1";
-            let interval4 = setInterval(() =>{
-                PodMenuPh.style.height = "0px";
-                clearInterval(interval4);
-            }, 450)
+function slider() {
+    let Img1 = document.querySelector('#Con2Imgs1');
+    let Img2 = document.querySelector('#Con2Imgs2');
+    let Img3 = document.querySelector('#Con2Imgs3');
+    let Img4 = document.querySelector('#Con2Imgs5');
+    let Text1 = document.querySelector('#Overlay');
+    let chet = 0;
+    Img1.style.opacity = `1`;
+    
+    let interval = setInterval(changeSlid, 5000);
+
+    function changeSlid() {
+        chet++;
+        switch (chet) {
+            case 1:
+                Img2.style.opacity = `1`
+                Img1.style.opacity = `0`
+                Text1.style.opacity = `0`;
+                break;
+            case 2:
+                Img2.style.opacity = `0`
+                Img3.style.opacity = `1`
+                break;
+            case 3:
+                Img3.style.opacity = `0`
+                Img4.style.opacity = `1`
+                break;
+            case 4:
+                Img4.style.opacity = `0`
+                Img1.style.opacity = `1`
+                Text1.style.opacity = `1`;
+                chet = 0;
+                break;
         }
     }
 }
-
-function checkWidth() {
-    if (window.innerWidth <= 768) {
-        if(divSrtelkaMenu.classList.toggle('open') == true){
-            console.log(divSrtelkaMenu.classList.toggle('open'));
-        }
-        chetPodMenu = true;
-        checkboxmainn();
-        checkboxMain.checked = false;
-    } 
-}
-checkWidth();
-
-// Проверка при изменении размера окна
-window.addEventListener('resize', checkWidth);
+slider();
