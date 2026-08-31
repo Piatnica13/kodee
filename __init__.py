@@ -7,10 +7,19 @@ from web.app.admin import admin
 from flask_wtf import CSRFProtect
 from flask_cors import CORS
 from authlib.integrations.flask_client import OAuth
+from werkzeug.middleware.proxy_fix import ProxyFix
 import os
 
 def create_app():
     app = Flask(__name__, template_folder="web/templates", static_folder="web/static")
+    
+
+    app.wsgi_app = ProxyFix(
+        app.wsgi_app,
+        x_for=1,
+        x_proto=1,
+        x_host=1
+    )
 
     
     # Логи (log.py)
