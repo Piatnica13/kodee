@@ -52,15 +52,6 @@ def start_bot(app):
                 bot.send_message(chat_id=msg.chat.id, text=f"Ошибка start: {e}, {traceback.format_exc()}")
 
 
-    # @bot.message_handler(commands=["products"])
-    # def get_products(msg):
-    #     with app.app_context():
-    #         try:
-    #             bot_service.catalog(msg)
-    #         except Exception as e:
-    #             bot.send_message(chat_id=msg.chat.id, text=f"Ошибка products: {e}, {traceback.format_exc()}")
-
-
     @bot.callback_query_handler(func=lambda call: True)
     def callbacks(call):
         with app.app_context():
