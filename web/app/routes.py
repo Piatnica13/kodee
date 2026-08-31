@@ -249,7 +249,7 @@ def google_login():
     
     redirect_url = url_for('web.authorize', _external=True)
 
-    print(redirect_url)
+    current_app.logger.info(f"GOOGLE REDIRECT URI: {redirect_url}")
 
     return oauth.google.authorize_redirect(redirect_url)
 
