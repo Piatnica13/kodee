@@ -210,7 +210,7 @@ class ProductService:
         
     @staticmethod
     def get_product():
-        products = Product.query.filter_by(active=True).all()
+        products = Product.query.filter_by(active=True).order_by(Product.id.asc()).all()
         product_data = [
             {
             "id": p.id,
