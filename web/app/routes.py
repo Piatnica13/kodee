@@ -247,7 +247,7 @@ def log_user():
 def google_login():
     from main import oauth
     
-    redirect_url = url_for('main.authorize', _external=True)
+    redirect_url = url_for('web.authorize', _external=True)
     return oauth.google.authorize_redirect(redirect_url)
 
 
