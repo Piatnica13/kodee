@@ -49,7 +49,8 @@ def start_bot(app):
                     user.reg(msg)
                     start_menu(bot_service.ctx, msg)
             except Exception as e:
-                bot.send_message(chat_id=msg.chat.id, text=f"Ошибка start: {e}, {traceback.format_exc()}")
+                bot.send_message(chat_id=msg.chat.id, text=f"Ошибка start: {e}")
+                # , {traceback.format_exc()}
 
 
     @bot.callback_query_handler(func=lambda call: True)
@@ -58,7 +59,8 @@ def start_bot(app):
             try:
                 bot_service.check_callbacks(call)
             except Exception as e:
-                bot.send_message(chat_id=call.message.chat.id, text=f"Ошибка callback: {e}, {traceback.format_exc()}")
+                bot.send_message(chat_id=call.message.chat.id, text=f"Ошибка callback: {e}")
+                # , {traceback.format_exc()}
 
 
     @bot.message_handler(content_types=['text'])
@@ -67,7 +69,8 @@ def start_bot(app):
             try:
                 bot_service.check_text_msg(msg)
             except Exception as e:
-                bot.send_message(chat_id=msg.chat.id, text=f"Ошибка text: {e}, {traceback.format_exc()}")
+                bot.send_message(chat_id=msg.chat.id, text=f"Ошибка text: {e}")
+                # , {traceback.format_exc()}
 
 
     @bot.message_handler(content_types=['photo'])
@@ -76,4 +79,5 @@ def start_bot(app):
             try:
                 bot_service.check_image(msg)
             except Exception as e:
-                bot.send_message(chat_id=msg.chat.id, text=f"Ошибка text: {e}, {traceback.format_exc()}")
+                bot.send_message(chat_id=msg.chat.id, text=f"Ошибка text: {e}")
+                # , {traceback.format_exc()}

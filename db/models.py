@@ -70,6 +70,7 @@ class Address(db.Model):
 class Product(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100))
+    short_name = db.Column(db.String(100))
     price = db.Column(db.Integer)
     price_chet = db.Column(db.Integer)
     weight = db.Column(db.Float)
@@ -98,8 +99,9 @@ class Product(db.Model):
         )
         return first_image.img1 if first_image else "/static/image/defaultt.jpg"
     
-    def __init__(self, name, price, weight, concept, category,  descriptions, slug, G = 0, gold = 0, silver = 0, form_gold = 0, form_silver = 0, price_chet = 0):
+    def __init__(self, name, short_name, price, weight, concept, category,  descriptions, slug, G = 0, gold = 0, silver = 0, form_gold = 0, form_silver = 0, price_chet = 0):
         self.name = name
+        self.short_name = short_name
         self.price = price
         self.price_chet = price_chet
         self.weight = weight

@@ -58,7 +58,7 @@ def material(ctx, call):
 
     ctx.users.change_material(material, call.message)
 
-    product = ctx.products.get_by_id(ctx.fsm.get(call.message.chat.id)['product_id'])
+    product = ctx.products.get_by_id_or_name(ctx.fsm.get(call.message.chat.id)['product_id'])
 
     ctx.bot.edit_message_text(chat_id=call.message.chat.id, text=f"{product.id}. G{product.G} {product.name} \nЗолото: {product.gold}/{product.form_gold}\nСеребро: {product.silver}/{product.form_silver}\n{product.price}₸ {ctx.users.get_material(msg=call.message).upper()}", reply_markup=ctx.markup.change_count_product(), message_id=call.message.message_id) # type: ignore
 
@@ -104,24 +104,12 @@ def notify(ctx, call):
     ctx.notifications.notify_workers(ctx=ctx, call=call)
 
 
+
 def deposit(ctx, call):
     action = call.data.split(":")
 
-    if len(action) == 2 and action[1] == 'period':
-        ctx.fsm.set(call.message.chat.id, {
-            "state": "waitDeposit",
-            "action": "period"
-        })
-
-        ctx.bot.edit_message_text(
-            text=f"Введите период в формате '01.08.2026 15.08.2026'",
-            message_id=call.message.message_id,
-            chat_id=call.message.chat.id,
-            reply_markup=ctx.markup.back()
-        )
-
-        return
-    elif len(action) == 2 and action[1] == 'delete':
+    # deposit:delete
+    if len(action) == 2 and action[1] == "delete":
         ctx.fsm.set(call.message.chat.id, {
             "state": "waitDeposit",
             "action": "delete"
@@ -129,26 +117,130 @@ def deposit(ctx, call):
 
         records = ctx.db.session.query(Sale).all()
 
-        text = 'Введите ID записи:\n'
+        text = "Введите ID записи:\n"
 
         for record in records:
-            text += (f"{record.id}. {record.name} {record.quantity}шт {record.material}\n{record.price * record.quantity}тг {record.price_chet * record.quantity}тг\n{record.sold_at}\n\n")
-        
-        ctx.bot.edit_message_text(
+            text += (
+                f"{record.id}. {record.name} "
+                f"{record.quantity}шт {record.material}\n"
+                f"{record.price * record.quantity}тг "
+                f"{record.price_chet * record.quantity}тг\n"
+                f"{record.sold_at}\n\n"
+            )
+
+        return ctx.bot.edit_message_text(
             text=text,
             message_id=call.message.message_id,
             chat_id=call.message.chat.id,
             reply_markup=ctx.markup.back()
         )
-        return
 
-    
-    return ctx.bot.edit_message_text(
-        text=f"Выберите действие: ",
-        message_id = call.message.message_id,
-        chat_id = call.message.chat.id,
-        reply_markup=ctx.markup.deposit()
-    )
+    # deposit:period
+    if len(action) == 2 and action[1] == "period":
+        ctx.fsm.set(call.message.chat.id, {
+            "state": "waitPeriodStart",
+            "date": {
+                "start": {},
+                "end": {}
+            }
+        })
+
+        return ctx.bot.edit_message_text(
+            text="Выберите год начала периода",
+            message_id=call.message.message_id,
+            chat_id=call.message.chat.id,
+            reply_markup=ctx.markup.years("start")
+        )
+
+    # deposit:period:start/end:year/month/day:value
+    if len(action) == 5 and action[1] == "period":
+        period_type = action[2]   # start / end
+        date_type = action[3]     # year / month / day
+        value = action[4]
+
+        data = ctx.fsm.get(call.message.chat.id)
+
+        # Защита от некорректного callback
+        if not data or "date" not in data:
+            return
+
+        date = data["date"][period_type]
+
+        date[date_type] = value
+
+        # Выбрали год
+        if date_type == "year":
+            text = (
+                "Выберите месяц "
+                + ("начала" if period_type == "start" else "конца")
+                + " периода"
+            )
+
+            markup = ctx.markup.months(period_type)
+
+        # Выбрали месяц
+        elif date_type == "month":
+            text = (
+                "Выберите день "
+                + ("начала" if period_type == "start" else "конца")
+                + " периода"
+            )
+
+            markup = ctx.markup.days(
+                period_type,
+                date["year"],
+                date["month"]
+            )
+
+        # Выбрали день
+        elif date_type == "day":
+
+            if period_type == "start":
+                data["state"] = "waitPeriodEnd"
+
+                text = "Выберите год конца периода"
+                markup = ctx.markup.years("end")
+
+            else:
+                data["state"] = "periodReady"
+
+                start = f"{data['date']['start']['year']}.{data['date']['start']['month']}.{data['date']['start']['day']}"
+                end = f"{data['date']['end']['year']}.{data['date']['end']['month']}.{data['date']['end']['day']}"
+
+                records = ctx.db.session.query(Sale).filter(
+                    Sale.sold_at >= start,
+                    Sale.sold_at <= end
+                ).all()
+        
+                text = ''
+                count_gold=0
+                count_silver=0
+                count_exclusive = 0
+        
+                for index, record in enumerate(records, start=1):
+                    count_gold += record.quantity if record.material == 'gold' else 0
+                    count_silver += record.quantity if record.material == 'silver' else 0
+                    count_exclusive += 1 if record.exclusive_id is not None else 0
+        
+                    text += (f"{index}. {record.name} {record.quantity}шт {record.material}\n{record.price * record.quantity}тг {record.price_chet * record.quantity}тг\n{record.sold_at}\n\n")
+        
+                text += f"\nПериод: {start}-{end}\nЗолото: {count_gold}\nСеребро: {count_silver}\nЭксклюзивов: {count_exclusive}\nЦена: {sum(record.price * record.quantity for record in records)}\nДепозит: {sum(record.price_chet * record.quantity for record in records)}"
+                
+                markup = ctx.markup.back()
+
+        else:
+            return
+
+        ctx.fsm.set(call.message.chat.id, data)
+
+        return ctx.bot.edit_message_text(
+            text=text,
+            message_id=call.message.message_id,
+            chat_id=call.message.chat.id,
+            reply_markup=markup
+        )
+
+    return ctx.bot.edit_message_text( text="Выберите действие", message_id = call.message.message_id, chat_id = call.message.chat.id, reply_markup=ctx.markup.deposit())
 
 
 def certificate(ctx, call):

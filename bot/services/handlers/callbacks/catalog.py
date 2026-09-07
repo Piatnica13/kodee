@@ -1,12 +1,11 @@
 def show_catalog(ctx, chat_id, message_id, state):
-    with ctx.app.app_context():
-        products = ctx.products.get_all()
+    products = ctx.products.get_all()
 
     result = ''
     count = 1
     
     for i in products:
-        result += f"{count}. ID:{i.id}. {i.name} {i.gold}/{i.silver}\n"
+        result += f"{i.short_name}:{i.id} {i.gold}/{i.silver}\n"
         count += 1
     
     ctx.bot.edit_message_text(

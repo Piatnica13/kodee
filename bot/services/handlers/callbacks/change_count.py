@@ -61,7 +61,7 @@ def count_msg(ctx, msg):
 
 def _change_product_count_core(ctx, product_id, material, amount):
 
-    product = ctx.products.get_by_id(product_id)
+    product = ctx.products.get_by_id_or_name(product_id)
         
     current_count = getattr(product, material)
     setattr(product, material, current_count + amount)

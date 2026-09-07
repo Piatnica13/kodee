@@ -19,13 +19,13 @@ from pathlib import Path
 import traceback
 import os
 
-FIELDS = ["name", "price", "price_chet", "weight", "concept", "category", "descriptions", "G", "images"]
+FIELDS = ["name", "short_name", "price", "price_chet", "weight", "concept", "category", "descriptions", "G", "images"]
 FIELDS_EXCLUSIVE = ["name", "price", "price_chet", "descriptions"]
 
 
 ACTIONS = {
         "show": {
-            "text": lambda ctx, msg, p:( f"{p.id}. G{p.G} {p.name} \nЗолото: {p.gold}/{p.form_gold}\nСеребро: {p.silver}/{p.form_silver}\n{p.price}₸ {ctx.users.get_material(msg=msg).upper()}"),
+            "text": lambda ctx, msg, p:( f"{p.id}. {p.name} \nЗолото: {p.gold}/{p.form_gold}\nСеребро: {p.silver}/{p.form_silver}\n{p.price}₸ {ctx.users.get_material(msg=msg).upper()}"),
             "markup": lambda ctx, msg, p: (ctx.markup.change_count_product())
         },
 
@@ -58,7 +58,7 @@ CERTIFICATES_DIR = BASE_DIR / "certificates"
 
 
 def action_with_product(ctx, msg, action):
-    product = ctx.products.get_by_id(msg.text)
+    product = ctx.products.get_by_id_or_name(msg.text)
 
     if product is None:
         ctx.bot.send_message(
@@ -87,7 +87,7 @@ def action_with_product(ctx, msg, action):
 def change_product(ctx, msg):
     field = ctx.fsm.get(msg.chat.id)['field']
 
-    product = ctx.products.get_by_id(ctx.fsm.get(msg.chat.id)['product_id'])
+    product = ctx.products.get_by_id_or_name(ctx.fsm.get(msg.chat.id)['product_id'])
 
     if product is None:
         ctx.bot.send_message(
@@ -174,7 +174,7 @@ def add_product_images(ctx, msg):
         create_product(ctx, msg, state)
         return
 
-    product = ctx.products.get_by_id(ctx.fsm.get(msg.chat.id)['product_id'])
+    product = ctx.products.get_by_id_or_name(ctx.fsm.get(msg.chat.id)['product_id'])
 
     save_product_images(ctx, msg, state, product)
 
@@ -185,6 +185,7 @@ def create_product(ctx, msg, state):
 
     product = Product(
         name=data["name"],
+        short_name=data["short_name"],
         price=int(data["price"]),
         price_chet=int(data["price_chet"]),
         weight=float(data["weight"]),
@@ -267,7 +268,7 @@ def product_images_path(slug):
 
 
 def hide_product(ctx, msg):
-    product=ctx.products.get_by_id(msg.text)
+    product=ctx.products.get_by_id_or_name(msg.text)
 
     if product.active:
         product.active=False
@@ -303,35 +304,6 @@ def deposit_actions(ctx, msg):
             chat_id=msg.chat.id,
             text=f"Запись {msg.text} успешно удалена!",
             reply_markup=ctx.markup.menu(ctx.users.get_role(msg=msg))
-        )
-
-    elif state == "period":
-        start = msg.text.split(" ")[0]
-        end = msg.text.split(" ")[1]
-
-        records = ctx.db.session.query(Sale).filter(
-            Sale.sold_at >= start,
-            Sale.sold_at <= end
-        ).all()
-
-        text = ''
-        count_gold=0
-        count_silver=0
-        count_exclusive = 0
-
-        for index, record in enumerate(records, start=1):
-            count_gold += record.quantity if record.material == 'gold' else 0
-            count_silver += record.quantity if record.material == 'silver' else 0
-            count_exclusive += 1 if record.exclusive_id is not None else 0
-
-            text += (f"{index}. {record.name} {record.quantity}шт {record.material}\n{record.price * record.quantity}тг {record.price_chet * record.quantity}тг\n{record.sold_at}\n\n")
-
-        text += f"\nПериод: {start}-{end}\nЗолото: {count_gold}\nСеребро: {count_silver}\nЭксклюзивов: {count_exclusive}\nЦена: {sum(record.price * record.quantity for record in records)}\nДепозит: {sum(record.price_chet * record.quantity for record in records)}"
-
-        ctx.bot.send_message(
-            msg.chat.id,
-            text,
-            reply_markup=ctx.markup.back()
         )
 
 

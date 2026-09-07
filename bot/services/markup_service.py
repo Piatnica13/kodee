@@ -1,4 +1,7 @@
 from telebot import types
+from datetime import datetime
+import calendar
+
 
 class MarkupService:
     def menu(self, role):
@@ -34,6 +37,7 @@ class MarkupService:
         markup = types.InlineKeyboardMarkup(row_width=2)
         
         btn1 = types.InlineKeyboardButton("Название", callback_data='product_action:change:name')
+        btn11 = types.InlineKeyboardButton("Короткое название", callback_data='product_action:change:short_name')
         btn2 = types.InlineKeyboardButton("Цена", callback_data='product_action:change:price')
         btn3 = types.InlineKeyboardButton("Цена депозита", callback_data='product_action:change:price_chet')
         btn4 = types.InlineKeyboardButton("Вес", callback_data='product_action:change:weight')
@@ -44,7 +48,7 @@ class MarkupService:
         btn9 = types.InlineKeyboardButton("Фотографии", callback_data='product_action:change:images')
         btn10 = types.InlineKeyboardButton("⬅️Меню", callback_data='menu')
                 
-        markup.add(btn1, btn2, btn3, btn4, btn5, btn6, btn7, btn8, btn9, btn10)
+        markup.add(btn1, btn11, btn2, btn3, btn4, btn5, btn6, btn7, btn8, btn9, btn10)
         
         return markup
     
@@ -122,3 +126,66 @@ class MarkupService:
         markup.add(btn1, btn2, btn3)       
 
         return markup 
+
+
+    def years(self, period_type):
+        markup = types.InlineKeyboardMarkup(row_width=3)
+
+        year = datetime.now().year
+
+        btn1 = types.InlineKeyboardButton(f"{year - 1}", callback_data=f"deposit:period:{period_type}:year:{year - 1}")
+        btn2 = types.InlineKeyboardButton(f"{year}", callback_data=f"deposit:period:{period_type}:year:{year}")
+        btn3 = types.InlineKeyboardButton(f"{year + 1}", callback_data=f"deposit:period:{period_type}:year:{year + 1}")
+
+        markup.add(btn1, btn2, btn3)
+
+        return markup
+
+
+    def months(self, period_type):
+        months = [
+            'Январь', 'Февраль', 'Март', 'Апрель',
+            'Май', 'Июнь', 'Июль', 'Август',
+            'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'
+        ]
+
+        markup = types.InlineKeyboardMarkup()
+
+        buttons = []
+
+        for index, month in enumerate(months, start=1):
+            buttons.append(
+                types.InlineKeyboardButton(
+                    month,
+                    callback_data=f"deposit:period:{period_type}:month:{index}"
+                )
+            )
+
+        for i in range(0, len(buttons), 4):
+            markup.row(*buttons[i:i + 4])
+
+        return markup
+
+
+    def days(self, period_type, year, month):
+        markup = types.InlineKeyboardMarkup(row_width=2)
+
+        days_count = calendar.monthrange(
+            int(year),
+            int(month)
+        )[1]
+
+        buttons = []
+
+        for day in range(1, days_count + 1):
+            buttons.append(
+                types.InlineKeyboardButton(
+                    str(day),
+                    callback_data=f"deposit:period:{period_type}:day:{day}"
+                )
+            )
+
+        for i in range(0, len(buttons), 4):
+            markup.row(*buttons[i:i + 4])
+
+        return markup

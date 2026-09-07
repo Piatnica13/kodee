@@ -141,7 +141,7 @@ class ProductService:
         products = Product.query.filter(
             (cast(Product.id, String).ilike(f"%{query}%")) |
             (Product.name.ilike(f"%{query.capitalize()}%")) # type: ignore
-        ).limit(10).all()
+        ).filter_by(active=True).limit(10).all()
 
         current_app.logger.info(f"Найдено {len(products)} товаров по запросу '{query}'.")
 

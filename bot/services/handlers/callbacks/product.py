@@ -50,7 +50,7 @@ def add_product(ctx, call):
 
 def delete_product(ctx, call):
     product_id = ctx.fsm.get(call.message.chat.id)['product_id']
-    product = ctx.products.get_by_id(product_id)
+    product = ctx.products.get_by_id_or_name(product_id)
 
     ctx.db.session.delete(product)
     ctx.db.session.commit()

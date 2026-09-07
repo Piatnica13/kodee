@@ -24,7 +24,7 @@ with app.app_context():
     
     # СОЗДАЕМ АДМИН АККАУНТ
     UserService.add_admin()
-    allProducts(db, app)
+    # allProducts(db, app)
     
 if __name__ == '__main__':
     port = int(os.getenv("PORT", 5000))
