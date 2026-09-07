@@ -2,6 +2,7 @@ from db.models import Product
 from sqlalchemy import case, func
 
 
+
 class ProductService:
     def get_all(self):
         concept_order = case(
@@ -13,12 +14,13 @@ class ProductService:
 
     
     def get_by_id_or_name(self, data):
-        data = data.strip()
-
+        data = str(data).strip()
+        
         if data.isdigit():
             return Product.query.filter_by(id=int(data)).first()
-        
+
+
         return Product.query.filter(
             Product.name.ilike(f"%{data}%") # type: ignore
         ).first()
-        
+    
