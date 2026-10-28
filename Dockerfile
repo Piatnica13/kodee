@@ -2,15 +2,39 @@ FROM python:3.14-slim
 
 WORKDIR /kodee
 
-COPY requirements.txt .
+# Обновляем системные сертификаты
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ca-certificates \
+    && update-ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
 
-RUN pip install -r requirements.txt
+# Устанавливаем Python-зависимости
+COPY requirements.txt .
+RUN pip install --no-cache-dir --upgrade pip \
+    && pip install --no-cache-dir -r requirements.txt \
+    && pip install --no-cache-dir --upgrade "certifi>=2026.10.19"
 
 COPY . .
 
 ENV FLASK_APP=main.py
 
 CMD ["python", "main.py"]
+
+
+
+# FROM python:3.14-slim
+
+# WORKDIR /kodee
+
+# COPY requirements.txt .
+
+# RUN pip install -r requirements.txt
+
+# COPY . .
+
+# ENV FLASK_APP=main.py
+
+# CMD ["python", "main.py"]
 
 
 # services:
