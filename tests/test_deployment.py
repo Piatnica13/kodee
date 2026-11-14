@@ -52,6 +52,29 @@ class DeploymentTests(unittest.TestCase):
         self.assertIn('Strict-Transport-Security',response.headers)
         self.assertEqual(app.test_client().get('/healthz',base_url='http://evil.invalid').status_code,400)
 
+    def test_render_guest_profile_redirects_to_login_without_loop(self):
+        with patch.dict(os.environ, {'RENDER_EXTERNAL_URL': 'https://demo.onrender.com',
+                                      'APP_BASE_URL': 'https://kodee.kz'}, clear=True):
+            app = create_app({'TESTING': True, 'SECRET_KEY': 'deployment-test',
+                'SQLALCHEMY_DATABASE_URI': 'sqlite:///:memory:', 'BOT_TOKEN': None,
+                'TRUSTED_HOSTS': ['kodee.kz'], 'TRUSTED_PROXY_CIDRS': [],
+                'PROXY_X_FOR': 0, 'PROXY_X_PROTO': 0, 'PROXY_X_HOST': 0, 'PROXY_X_PORT': 0})
+        self.assertTrue(app.config['PUBLIC_HTTPS'])
+        response = app.test_client().get('/profil', base_url='http://kodee.kz',
+            headers={'X-Forwarded-Proto': 'http', 'X-Forwarded-Host': 'evil.invalid'},
+            environ_overrides={'REMOTE_ADDR': '10.2.3.4'}, follow_redirects=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.history), 1)
+        self.assertEqual(response.history[0].location, '/login')
+        self.assertEqual(response.request.path, '/login')
+
+    def test_render_public_https_explicit_override(self):
+        with patch.dict(os.environ, {'RENDER_EXTERNAL_URL': 'https://demo.onrender.com',
+                                      'PUBLIC_HTTPS': 'false'}, clear=True):
+            app = create_app({'TESTING': True, 'SECRET_KEY': 'deployment-test',
+                'SQLALCHEMY_DATABASE_URI': 'sqlite:///:memory:', 'BOT_TOKEN': None})
+        self.assertFalse(app.config['PUBLIC_HTTPS'])
+
     def test_render_legacy_postgres_url_is_normalized_without_connecting(self):
         with patch.dict(os.environ,{'DATABASE_URL':'postgres://local:fake@127.0.0.1:5432/kodee'}):
             app=create_app({'TESTING':True,'SECRET_KEY':'deployment-test','BOT_TOKEN':None,

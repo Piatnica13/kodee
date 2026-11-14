@@ -27,6 +27,11 @@ def create_app(test_config=None):
     app = Flask(__name__, template_folder='web/templates', static_folder='web/static')
     app.config.from_object(Config)
     base = os.getenv('APP_BASE_URL') or os.getenv('RENDER_EXTERNAL_URL') or 'https://kodee.kz'
+    # Render terminates public HTTPS at its ingress and forwards HTTP to the app.
+    # Use its platform-provided external URL as the default, while allowing an
+    # explicit PUBLIC_HTTPS setting for other deployments.
+    render_url = os.getenv('RENDER_EXTERNAL_URL', '')
+    render_https = urlsplit(render_url).scheme == 'https' and bool(urlsplit(render_url).hostname)
     database_url = os.getenv('DATABASE_URL')
     if database_url and database_url.startswith('postgres://'):
         database_url = 'postgresql://' + database_url[len('postgres://'):]
@@ -37,7 +42,7 @@ def create_app(test_config=None):
         ADMIN_PASSWORD=os.getenv('ADMIN_PASSWORD', ''),
         LOG_DIR=os.getenv('LOG_DIR', 'logs'),
         PRODUCT_IMAGES_DIR=os.getenv('PRODUCT_IMAGES_DIR') or None,
-        PUBLIC_HTTPS=env_bool('PUBLIC_HTTPS', False),
+        PUBLIC_HTTPS=env_bool('PUBLIC_HTTPS', render_https),
         APP_BASE_URL=base,
         SESSION_COOKIE_SECURE=env_bool('SESSION_COOKIE_SECURE', urlsplit(base).scheme == 'https'),
         TRUSTED_HOSTS=[value.strip() for value in os.getenv('TRUSTED_HOSTS', '').split(',') if value.strip()],
