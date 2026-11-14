@@ -58,6 +58,12 @@ def start_bot(app):
         service.ctx.users.reg(message)
         start_menu(service.ctx, message)
 
+    @bot.message_handler(commands=['orders', 'order', 'order_status'])
+    @protected()
+    def customer_orders(message):
+        from customer_bot.staff import handle_order_command
+        handle_order_command(bot, message)
+
     @bot.callback_query_handler(func=lambda call: True)
     @protected(callback=True)
     def callbacks(call):

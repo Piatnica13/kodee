@@ -45,6 +45,12 @@ def upgrade_schema():
         with db.engine.begin() as connection:
             connection.execute(text('ALTER TABLE users ADD COLUMN google_sub VARCHAR(255)'))
     db.create_all()
+    from customer_bot.storage import metadata as customer_metadata
+    customer_metadata.create_all(db.engine)
+    # Prototype deployments may already have the original customer outbox.
+    if 'target' not in {column['name'] for column in inspect(db.engine).get_columns('cb_outbox')}:
+        with db.engine.begin() as connection:
+            connection.execute(text("ALTER TABLE cb_outbox ADD COLUMN target VARCHAR(16) NOT NULL DEFAULT 'customer'"))
     with db.engine.begin() as connection:
         connection.execute(text("UPDATE users SET email = NULLIF(lower(trim(email)), '')"))
         connection.execute(text("CREATE UNIQUE INDEX IF NOT EXISTS uq_users_email_normalized ON users (lower(NULLIF(trim(email), '')))"))

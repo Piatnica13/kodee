@@ -50,6 +50,9 @@ def create_app(test_config=None):
         GOOGLE_CLIENT_ID=os.getenv('GOOGLE_CLIENT_ID', ''),
         GOOGLE_CLIENT_SECRET=os.getenv('GOOGLE_CLIENT_SECRET', ''),
         BOT_TOKEN=os.getenv('BOT_TOKEN'),
+        CUSTOMER_BOT_TOKEN=os.getenv('CUSTOMER_BOT_TOKEN', ''),
+        CUSTOMER_BOT_WEBHOOK_SECRET=os.getenv('CUSTOMER_BOT_WEBHOOK_SECRET', ''),
+        CUSTOMER_BOT_ADMIN_IDS={int(value.strip()) for value in os.getenv('CUSTOMER_BOT_ADMIN_IDS', '').split(',') if value.strip()},
         BOT_WEBHOOK_SECRET=os.getenv('BOT_WEBHOOK_SECRET', ''),
         WEBHOOK_URL=os.getenv('WEBHOOK_URL', ''),
         BOT_ALLOWED_USER_IDS={int(value.strip()) for value in os.getenv('BOT_ALLOWED_USER_IDS', '').split(',') if value.strip()},
@@ -70,8 +73,11 @@ def create_app(test_config=None):
     from bot.api.api import bot_api
     app.register_blueprint(web_api)
     app.register_blueprint(bot_api)
+    from customer_bot import init_customer_bot, customer_api, register_commands as register_customer_commands
+    init_customer_bot(app)
     csrf = CSRFProtect(app)
     csrf.exempt(bot_api)
+    csrf.exempt(customer_api)
     CORS(app, origins=[app.config['APP_BASE_URL']], supports_credentials=True,
          methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
          allow_headers=['Content-Type', 'Authorization', 'X-CSRFToken'])
@@ -79,4 +85,5 @@ def create_app(test_config=None):
     from db.maintenance import register_commands
     start_bot(app)
     register_commands(app)
+    register_customer_commands(app)
     return app

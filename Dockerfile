@@ -8,6 +8,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 COPY __init__.py config.py main.py gunicorn.conf.py ./
 COPY bot/ ./bot/
+COPY customer_bot/ ./customer_bot/
 COPY db/ ./db/
 COPY web/ ./web/
 RUN mkdir -p logs certificates instance /var/data/productImgs \
