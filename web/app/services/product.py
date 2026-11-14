@@ -1,121 +1,82 @@
-from web.app.services.user import UserService
-from flask import session, current_app
-from db.models import Product, db, User, Address
-from sqlalchemy.orm.attributes import flag_modified
+from flask import session, current_app, abort
+from db.models import Product, Product_image, db, Address
 from sqlalchemy import cast, String
+from web.app.security import current_user
+from web.app.validation import positive_id, text
+from web.app.images import publish_images, MAX_IMAGE_BYTES
+from slugify import slugify
+
 
 class ProductService:
     @staticmethod
     def get_user_basket(user):
-        
-        products = []
-        for i in user.basket:
-            product = Product.query.filter_by(id=i[0]).first()
-            if product:
-                products.append(product)
-            else:
-                current_app.logger.warning(f"Товар с ID {i[0]} из корзины не найден в базе.")
-        return products
-    
+        ids = [item[0] for item in (user.basket or []) if isinstance(item, list) and len(item) == 4]
+        return Product.query.filter(Product.id.in_(ids), Product.active.is_(True)).all()
+
     @staticmethod
     def check_user_for_product_page(slug):
-        user_id = session.get('user_id') or ''
-        product = Product.query.filter_by(slug=slug).first()
+        product = Product.query.filter_by(slug=slug, active=True).first_or_404()
+        user = current_user()
+        return {'product': product, 'user': user or '',
+                'address': Address.query.filter_by(person_id=user.id).first() if user else '',
+                'favorite': (user.favourites or []) if user else []}
 
-        if user_id != '':
-            person = User.query.get(int(user_id))
+    @staticmethod
+    def basket_user():
+        user = current_user()
+        if not user:
+            abort(401, description='Для этого действия войдите в аккаунт')
+        return user
 
-            address = Address.query.filter_by(person_id=person.id).first() # type: ignore
-            current_app.logger.debug(f"Загружена страница продукта '{slug}' пользователем {person.email}") # type: ignore
-            return { "product": product,
-                    "user": person,
-                    "address": address,
-                    "favorite": person.favourites} # type: ignore
-        else:
-            return {"product": product,
-                "user": '',
-                "address": '',
-                "favorite": ''}
+    @staticmethod
+    def requested_product(data):
+        product_id = positive_id(data.get('product_id'))
+        product = db.session.get(Product, product_id)
+        if not product or not product.active:
+            abort(404, description='Товар недоступен')
+        return product
 
-    
     @staticmethod
     def add_product_to_basket(data):
-        user_name = data.get('user_name')
-        
-        if user_name != '':
-            user = UserService.get_user(session.get("user_id")) # type: ignore
-            color = data.get('color')
-            size = data.get('size')
-            material = data.get('material')
-            product_id = data.get('product_id')
+        user = ProductService.basket_user()
+        product = ProductService.requested_product(data)
+        color = text(data.get('color'), 'Цвет', 20).lower()
+        size = text(data.get('size'), 'Размер', 30)
+        material = text(data.get('material'), 'Материал', 40).lower()
+        if color not in {'красный', 'черный'} or size not in {'Меньше 12 см', '12-14 см', '15-16 см', '17-18 см', 'Больше 18 см'} or material not in {'золото 585 (красное)', 'серебро 925', 'золото 585 (белое)', 'золото 585 (жёлтое)'}:
+            raise ValueError('Выберите допустимые параметры товара')
+        basket = list(user.basket or [])
+        if any(item[0] == product.id for item in basket):
+            return {'success': False, 'error': 'Товар уже в корзине'}
+        user.basket = basket + [[product.id, color, size, material]]
+        db.session.commit()
+        return {'success': True, 'message': 'Товар успешно добавлен в корзину'}
 
-            for i in user.basket: # type: ignore
-                if product_id == i[0]:
-                    current_app.logger.info(f"Товар ID {product_id} уже в корзине пользователя ID {user.id}.") # type: ignore
-                    return {"success": False, "error": "Товар уже в <br><a style='color: var(--black)' href='/basket'>корзине</a>"}
-
-            user.basket.append([product_id, color, size, material]) # type: ignore
-
-            flag_modified(user, "basket")
-            db.session.commit()
-
-            return {"success": True, "message": "Товар успешно добавлен в <br><a style='color: var(--black)' href='/basket'>корзину</a>"}
-        else:
-            return {"success": False, "error": "Вы не <br><a style='color: var(--black)' href='/login'>авторизованы</a>"}
-    
     @staticmethod
     def delete_product_from_basket(user, data):
-        old_len = len(user.basket)
-        product_id = data.get("product_id")
-        
-        user.basket = [item for item in user.basket if item[0] != product_id]
-        
-        db.session.add(user)
+        product_id = positive_id(data.get('product_id'))
+        previous = user.basket or []
+        user.basket = [item for item in previous if item[0] != product_id]
         db.session.commit()
-        
-        new_len = len(user.basket)
-        
-        if new_len < old_len:
-            current_app.logger.info(f"Пользователь ID {user.id} удалил товар ID {product_id} из корзины.")
-            return {"success": True, "message": "Товар успешно удален."}
-        else:
-            current_app.logger.warning(f"Товар ID {product_id} не найден в корзине пользователя ID {user.id}.")
-            return {"success": False, "message": "Товар не найден."}
-    
+        return {'success': True, 'message': 'Товар удален'}
+
     @staticmethod
     def add_or_delete_favorite_product(data):
-        user_name = data.get('user_name')
-        print(user_name)
-        if user_name != '':
-            user = UserService.get_user(session.get("user_id")) # type: ignore
-            product_id = data.get("product_id")
-            def add_favorite():
-                favs = user.favourites # type: ignore
-                favs = favs + [product_id]
-                user.favourites = favs # type: ignore
-
-                message = "Товар добавлен в избранные"
-                current_app.logger.info(f"Товар ID {product_id} добавлен в избранное пользователя ID {user.id}.") # type: ignore
-                return message
-
-            def delete_favorite():
-                user.favourites = [pid for pid in user.favourites if pid != product_id] # type: ignore
-                message = "Товар удален из избранных"
-                current_app.logger.info(f"Товар ID {product_id} удалён из избранного пользователя ID {user.id}.") # type: ignore
-                return message
-
-            result = delete_favorite() if product_id in user.favourites else add_favorite() # type: ignore
-
-            db.session.add(user)
-            db.session.commit()
-
-            return {"success": True, "message": result}
+        user = ProductService.basket_user()
+        product = ProductService.requested_product(data)
+        favorites = list(user.favourites or [])
+        if product.id in favorites:
+            user.favourites = [pid for pid in favorites if pid != product.id]
+            message = 'Товар удалён из избранного'
         else:
-            return {"success": False, "error": "Вы не <br><a style='color: var(--black)' href='/login'>авторизованы</a>"}
-    
+            user.favourites = favorites + [product.id]
+            message = 'Товар добавлен в избранное'
+        db.session.commit()
+        return {'success': True, 'message': message}
+
     @staticmethod
     def trans_products_to_JS():
-        all_products = Product.query.all()
+        all_products = Product.query.filter_by(active=True).all()
 
         product_list = []
         for product in all_products:
@@ -130,10 +91,10 @@ class ProductService:
             })
 
         return product_list
-    
+
     @staticmethod
     def search_product(data):
-        query = data.get("query", "").strip()
+        query = data.get("query", "").strip()[:100]
         if not query:
             current_app.logger.debug("Пустой поисковый запрос.")
             return []
@@ -152,12 +113,12 @@ class ProductService:
             "slug": p.slug,
             "image": p.image()
         } for p in products]
-        
+
         return results
-    
+
     @staticmethod
     def get_products_for_properties():
-        products = Product.query.limit(4).all()
+        products = Product.query.filter_by(active=True).limit(4).all()
         products_json = []
         for p in products:
             products_json.append({
@@ -177,37 +138,27 @@ class ProductService:
                 }
             })
         return products_json
-    
+
     @staticmethod
     def add_imgs_for_product(data_files, data_form):
-        from slugify import slugify
-        import os
+        name = text(data_form.get('productName'), 'Название товара', 100)
+        candidates = Product.query.filter_by(name=name).with_for_update().limit(2).all()
+        if len(candidates) > 1:
+            raise ValueError('Несколько товаров с таким названием: укажите уникальный slug товара')
+        product = candidates[0] if candidates else Product.query.filter_by(slug=slugify(name)).with_for_update().first()
+        if not product:
+            abort(404, description='Сначала создайте товар')
+        images = [(num, data_files[f'img{num}'].stream.read(MAX_IMAGE_BYTES + 1))
+                  for num in range(1, 5) if f'img{num}' in data_files and data_files[f'img{num}'].filename]
+        if not images:
+            raise ValueError('Выберите изображения')
+        with publish_images(product.slug, images):
+            for num, _ in images:
+                Product_image.query.filter_by(product_id=product.id, num=num).delete()
+                db.session.add(Product_image(num, product.id, f'/static/image/productImgs/{product.slug}/img{num}.webp'))
+            db.session.commit()
+        return {'status': 'ok', 'success': True}
 
-        try:
-            name = slugify(data_form.get('productName'))
-            base_path = os.path.join(current_app.root_path, 'static', 'image', 'productImgs', name)
-
-            os.makedirs(base_path, exist_ok=True)
-
-            img1 = data_files.get('img1')
-            img2 = data_files.get('img2')
-            img3 = data_files.get('img3')
-            img4 = data_files.get('img4')
-
-            if img1:
-                img1.save(os.path.join(base_path, "img1.webp"))
-            if img2:
-                img2.save(os.path.join(base_path, "img2.webp"))
-            if img3:
-                img3.save(os.path.join(base_path, "img3.webp"))
-            if img4:
-                img4.save(os.path.join(base_path, "img4.webp"))
-
-            current_app.logger.info(f"Файлы {img1} {img2} {img3} {img4} успешно добавлены в папку {base_path}")
-            return {"status": "ok"}
-        except Exception as e:
-            return {'error': f"Ошибка с файлами {e}"}
-        
     @staticmethod
     def get_product():
         products = Product.query.filter_by(active=True).order_by(Product.id.asc()).all()

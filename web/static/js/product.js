@@ -1,210 +1,59 @@
-let favorite = document.querySelector("#f");
-let productId = document.querySelector("#d");  
-let b = document.querySelector("#b")
-let user_size = 0;
-
-
-
-function urlBth(user_name) {
-    let token = document.querySelector("meta[name='csrf_token']").getAttribute("content");
-    fetch('/add_basket', {
-      method: "POST",
-      credentials: "include",
-      headers: { 
-        "Content-Type": "application/json",
-        "X-CSRFToken": token
-       },
-      body: JSON.stringify({user_name: user_name, product_id: parseInt(productId.value), color: document.querySelector("#productColor").value.toLowerCase(), size: document.querySelector("#productSize").value, material: document.querySelector("#productMaterial").value.toLowerCase()})
-    })
-      .then(response =>response.json())
-      .then(data => {
-        if(data.success){
-          showToast(data.message);
-        }
-        else{
-          showToast(data.error)
-        }
-      })
+const productId = Number(document.querySelector('#d').value);
+const csrfToken = document.querySelector("meta[name='csrf_token']").content;
+const images = Array.from(document.querySelectorAll('.productFotos'));
+let imageIndex = 0;
+function resizeGallery() {
+  images.forEach((image, index) => { image.style.opacity = window.innerWidth > 1000 || index === imageIndex ? '1' : '0'; });
 }
+function moveImage(delta) {
+  if (images.length) imageIndex = (imageIndex + delta + images.length) % images.length;
+  resizeGallery();
+}
+document.querySelector('#profilGalochka1').addEventListener('click', () => moveImage(-1));
+document.querySelector('#profilGalochka2').addEventListener('click', () => moveImage(1));
+window.addEventListener('resize', resizeGallery);
+resizeGallery();
 
-
-let left = document.querySelector("#profilGalochka1");
-let right = document.querySelector("#profilGalochka2");
-
-let img1 = document.querySelector("#productImg1");
-let img2 = document.querySelector("#productImg2");
-let img3 = document.querySelector("#productImg3");
-let img4 = document.querySelector("#productImg4");
-
-img2.style.opacity = "0";
-img3.style.opacity = "0";
-img4.style.opacity = "0";
-
-let chett = 0;
-
-right.addEventListener('click', sizeRight)
-function sizeRight() {
-  switch (chett) {
-    case 0: 
-      chett++;
-      img1.style.opacity = "0";
-      img2.style.opacity = "1";
-      img3.style.opacity = "0";
-      img4.style.opacity = "0";
-      break;
-    case 1:
-      chett++;
-      img1.style.opacity = "0";
-      img2.style.opacity = "0";
-      img3.style.opacity = "1";
-      img4.style.opacity = "0";
-      break
-    case 2:
-      chett++;
-      img1.style.opacity = "0";
-      img2.style.opacity = "0";
-      img3.style.opacity = "0";
-      img4.style.opacity = "1";
-      break
-    case 3:
-      chett = 0;
-      img1.style.opacity = "1";
-      img2.style.opacity = "0";
-      img3.style.opacity = "0";
-      img4.style.opacity = "0";
-      break
-    default:
-      break;
+async function productAction(url, payload) {
+  try {
+    const response = await fetch(url, {method:'POST', credentials:'include',
+      headers:{'Content-Type':'application/json','X-CSRFToken':csrfToken}, body:JSON.stringify(payload)});
+    const result = await response.json();
+    showToast(result.message || result.error || 'Не удалось выполнить действие');
+    return response.ok && result.success;
+  } catch (_) {
+    showToast('Не удалось выполнить действие. Повторите попытку.');
+    return false;
   }
 }
 
-left.addEventListener('click', () => {
-  
-  switch (chett) {
-    case 1: 
-      chett--;
-      img1.style.opacity = "1";
-      img2.style.opacity = "0";
-      img3.style.opacity = "0";
-      img4.style.opacity = "0";
-      break;
-    case 2:
-      chett--;
-      img1.style.opacity = "0";
-      img2.style.opacity = "1";
-      img3.style.opacity = "0";
-      img4.style.opacity = "0";
-      break
-    case 3:
-      chett--;
-      img1.style.opacity = "0";
-      img2.style.opacity = "0";
-      img3.style.opacity = "1";
-      img4.style.opacity = "0";
-      break
-    case 0:
-      chett = 3;
-      img1.style.opacity = "0";
-      img2.style.opacity = "0";
-      img3.style.opacity = "0";
-      img4.style.opacity = "1";
-      break
-    default:
-      break;
-  }
-})
-
-window.addEventListener("resize", resize);
-let cheked = false;
-function resize() {
-    width = window.innerWidth;
-    if (width <= 1000){
-      if(cheked == false){
-        img1.style.opacity = "1";
-        img2.style.opacity = "0";
-        img3.style.opacity = "0";
-        img4.style.opacity = "0";
-        cheked = true;
-      }
-    }
-    else{
-      cheked = false;
-      img1.style.opacity = "1";
-      img2.style.opacity = "1";
-      img3.style.opacity = "1";
-      img4.style.opacity = "1";
-    }
-  };
-  
-  let BthLike = document.querySelector("#productLike")
-  let BthGetLike = document.querySelector("#productGetLike");
-  BthLike.addEventListener('click', BthLikes)
-  BthGetLike.addEventListener("click", BthLikes)
-
-  function BthLikes() {
-  let name = BthLike.dataset.name;
-  let token = document.querySelector("meta[name='csrf_token']").getAttribute("content");
-  fetch("/add_favorite", {
-    method: "POST",
-    credentials: "include",
-    headers: { 
-      "Content-Type": "application/json",
-      "X-CSRFToken": token
-     },
-    body: JSON.stringify({user_name: name, product_id: parseInt(productId.value)})
-  })
-  .then(response => response.json())
-  .then(data => {
-    if (data.success){
-      showToast(data.message)
-      if (BthLike.style.display == "flex"){
-        FuncBthLike();
-      }
-      else{
-        FuncBthGetLike();
-      }
-    }
-    else{
-      showToast(data.error)
-    }
-  })
+document.querySelector('#productBth').addEventListener('click', () => productAction('/add_basket', {
+  product_id:productId,
+  color:document.querySelector('#productColor').value.toLowerCase(),
+  size:document.querySelector('#productSize').value,
+  material:document.querySelector('#productMaterial').value.toLowerCase()
+}));
+let favorites = [];
+try { favorites = JSON.parse(document.querySelector('#f').value); } catch (_) {}
+let isFavorite = Array.isArray(favorites) && favorites.includes(productId);
+const outlineHeart = document.querySelector('#productGetLike');
+const filledHeart = document.querySelector('#productLike');
+function renderFavorite() {
+  outlineHeart.style.display = isFavorite ? 'none' : 'flex';
+  filledHeart.style.display = isFavorite ? 'flex' : 'none';
+  outlineHeart.style.opacity = isFavorite ? '0' : '1';
+  filledHeart.style.opacity = isFavorite ? '1' : '0';
 }
-
-
-function FuncBthGetLike(){
-  BthLike.style.display = "flex";
-  BthGetLike.style.opacity = "0";
-  BthLike.style.opacity = "1";
-  BthGetLike.style.display = "none";
-}
-
-function FuncBthLike() {
-  BthLike.style.opacity = "0";
-  BthGetLike.style.display = "flex";
-  BthGetLike.style.opacity = "1";
-  BthLike.style.display = "none";
-}
-
-function chek(){
-  let value = favorite.value.slice(1).slice(0, -1).split(', '); 
-  for(let i = 0; i < value.length; i++){
-    if (productId.value == value[i]){
-      FuncBthGetLike()
-    }
+async function toggleFavorite() {
+  if (await productAction('/add_favorite', {product_id:productId})) {
+    isFavorite = !isFavorite;
+    renderFavorite();
   }
 }
-chek();
-resize();
-
-document.querySelector("#productMaterial").addEventListener('change', function(){
-  
-  const selectedValue = this.value;
-  
-  
-  if (selectedValue === "Золото 585 (Белое)") {
-    showToast("Изделия из белого золота 585 изготавливается на заказ, до 2 недель", 10, 5000)
-  }
-  else if(selectedValue === "Золото 585 (Жёлтое)"){
-    showToast("Изделия из жёлтого золота 585 изготавливается на заказ, до 2 недель", 10, 5000)
-  }
-})
+outlineHeart.addEventListener('click', toggleFavorite);
+filledHeart.addEventListener('click', toggleFavorite);
+renderFavorite();
+document.querySelector('#productMaterial').addEventListener('change', function() {
+  if (['Золото 585 (Белое)', 'Золото 585 (Жёлтое)'].includes(this.value))
+    showToast('Изделия из белого и жёлтого золота 585 изготавливаются на заказ, до 2 недель', 10, 5000);
+});

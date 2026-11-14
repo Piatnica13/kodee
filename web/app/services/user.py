@@ -1,250 +1,179 @@
 from db.models import User, Address, db
-from flask import session, current_app, request, flash, redirect
+from flask import session, current_app, request, flash
 from werkzeug.security import generate_password_hash, check_password_hash
+from sqlalchemy import func
+from sqlalchemy.exc import IntegrityError
+from web.app.validation import text, email as valid_email
+from web.app.security import establish_session
+from web.app.log import log_action
 import os
 
 
 class UserService:
     @staticmethod
-    def get_user(user_id: int) -> User | None:
-        if not user_id:
-            current_app.logger.error("Id пользователя не найдено")
+    def get_user(user_id):
+        if not isinstance(user_id, int) or isinstance(user_id, bool):
             return None
-        return User.query.get(user_id)
-    
-    @staticmethod
-    def update_user(user: User, data):
-        name = data.get("name")
-        last_name = data.get("last_name", "")
-        phone = data.get("phone", "")
-        email = data.get("email", "")
-        address = data.get("address", "")
-        
-        user.name = name.strip() if name else user.name
-        user.last_name = last_name.strip() if last_name else user.last_name
-        user.phone = phone.strip() if phone else user.phone
-        user.email = email.strip() if email else user.email
-        user.address = address.strip() if address else user.address
-        
-        flash("Информация о пользователе успешно обновлена.")
-        
-        current_app.logger.debug(f"Обновлена инофрмация для пользователя ID {user.id}")
-    
-    @staticmethod
-    def update_password(user: User, data):
-        new_pass = data.get("newPass")
-        re_new_pass = data.get("reNewPass")
-        
-        min_len_password = 6
-
-        if new_pass and new_pass == re_new_pass and len(new_pass) >= min_len_password:
-            heshed_pass = generate_password_hash(new_pass)
-            user.password = heshed_pass
-            flash("Пароль успешно обновлен.")
-            current_app.logger.debug(f"Пароль пользователя ID {user.id} успешно обновлён.")
-        else:
-            flash("Ошибка, пароли не совпадают или их длинна меньше 6 символов.")
-            current_app.logger.warning(f"Ошибка при смене пароля у пользователя ID {user.id}: несовпадение или короткий пароль.")
-    
-    @staticmethod
-    def change_address(user: User, data):
-        deleted_addresses = data.get("deleted_addresses", "")
-        deleted_ids = [int(id) for id in deleted_addresses.split(",") if id.isdigit()]
-
-        if deleted_ids:
-            Address.query.filter(Address.id.in_(deleted_ids), Address.person_id == user.id).delete(synchronize_session=False)
-            current_app.logger.info(f"Пользователь ID {user.id} удалил адреса: {deleted_ids}")
-        else:
-            current_app.logger.debug(f"Нет адресов для удаления у пользователя ID {user.id}.")
-
-        addressFromForm = data.get("addresses")
-
-        if addressFromForm is not None:
-            user.address = addressFromForm
-            current_app.logger.debug(f"Пользователь ID {user.id} установил основной адрес: {addressFromForm}")
-        else:
-            user.address = ""
-            current_app.logger.debug(f"Пользователь ID {user.id} очистил основной адрес.")
-        
-    @staticmethod
-    def add_address(user: User, data): # type: ignore
-        name = data.get("name")
-        city = data.get("city")
-        street = data.get("street")
-        home = data.get("home")
-        flat = data.get("flat")
-
-        address = Address(name=name, city=city, street=street, home=home, flat=flat, person_id=user.id) # type: ignore
-        
-        db.session.add(address)
+        return db.session.get(User, user_id)
 
     @staticmethod
-    def put_address(user: User, data):
-        city = data.get("city")
-        street = data.get("street")
-        home = data.get("home")
-        flat = data.get("flat")
-        
-        address_count = Address.query.filter_by(person_id=user.id).count()
+    def update_user(user, data):
+        name = text(data.get('name', ''), 'Имя', 25)
+        last_name = text(data.get('last_name', ''), 'Фамилия', 40, False)
+        phone = text(data.get('phone', ''), 'Телефон', 11, False)
+        address = text(data.get('address', user.address or ''), 'Адрес', 150, False)
+        if phone and (not phone.isdigit() or len(phone) != 11):
+            raise ValueError('Телефон должен содержать 11 цифр')
+        submitted_email = data.get('email', user.email or '')
+        email = valid_email(submitted_email) if submitted_email else user.email
+        if email != user.email:
+            if not email:
+                raise ValueError('Укажите Email')
+            reserved = current_app.config.get('ADMIN_EMAIL', '').strip().lower()
+            if email == reserved or User.query.filter(func.lower(User.email) == email, User.id != user.id).first():
+                raise ValueError('Этот Email уже используется')
+            session.pop('admin', None)
+            user.email = email
+        user.name, user.last_name, user.phone, user.address = name, last_name, phone, address
+        flash('Информация о пользователе успешно обновлена.')
 
-        if address_count == 1:
-            user.address = f"г.{city} ул.{street} д.{home} кв.{flat}"
-            current_app.logger.debug(f"Основной адрес установлен для пользователя ID {user.id}.")
-            
+    @staticmethod
+    def update_password(user, data):
+        password = data.get('newPass', '')
+        if not isinstance(password, str) or not 6 <= len(password) <= 128 or password != data.get('reNewPass'):
+            raise ValueError('Пароли должны совпадать и содержать от 6 до 128 символов')
+        user.password = generate_password_hash(password)
+        flash('Пароль успешно обновлен.')
+
+    @staticmethod
+    def change_address(user, data):
+        raw = text(data.get('deleted_addresses', ''), 'Адреса', 2000, False)
+        if any(not item.isdigit() for item in raw.split(',') if item):
+            raise ValueError('Некорректный список адресов')
+        ids = [int(item) for item in raw.split(',') if item]
+        if ids:
+            Address.query.filter(Address.id.in_(ids), Address.person_id == user.id).delete(synchronize_session=False)
+        value = text(data.get('addresses', ''), 'Адрес', 150, False)
+        owned = Address.query.filter_by(person_id=user.id).all()
+        if value and value not in {UserService.format_address(address) for address in owned}:
+            raise ValueError('Выберите собственный адрес доставки')
+        user.address = value
+
+    @staticmethod
+    def format_address(address):
+        return f"г.{address.city} ул.{address.street} д.{address.home} кв.{address.flat or ''}"
+
     @staticmethod
     def add_address(user, data):
-        name = data.get("name")
-        city = data.get("city")
-        street = data.get("street")
-        home = data.get("home")
-        flat = data.get("flat")
-        
-        if not city or not street or not home:
-            current_app.logger.warning("Не все обязательные поля заполнены при добавлении адреса.")
-            return {"success": False, "error": "Не все обязательные поля заполнены"}
-        
-        new_address = Address(name=name, city=city, street=street, home=home, flat=flat, person_id=user.id) # type: ignore
-        db.session.add(new_address)
+        address = Address(person_id=user.id,
+            name=text(data.get('name', ''), 'Название', 40, False),
+            city=text(data.get('city'), 'Город', 20),
+            street=text(data.get('street'), 'Улица', 20),
+            home=text(data.get('home'), 'Дом', 20),
+            flat=text(data.get('flat', ''), 'Квартира', 20, False))
+        db.session.add(address)
+        db.session.flush()
+        if Address.query.filter_by(person_id=user.id).count() == 1:
+            user.address = UserService.format_address(address)
         db.session.commit()
-        
-        address_count = Address.query.filter_by(person_id=user.id).count()
-        if address_count == 1:
-            user.address = f"г.{new_address.city} ул.{new_address.street} д.{new_address.home} кв.{new_address.flat}"
-            db.session.commit()
-            current_app.logger.debug(f"Основной адрес установлен для пользователя ID {user.id}.")
+        return {'success': True, 'message': 'Адрес успешно добавлен', 'address': UserService.format_address(address)}
 
-        return {
-            "success": True,
-            "message": "Адрес успешно добавлен",
-            "address": f"г.{new_address.city} ул.{new_address.street} д.{new_address.home} кв.{new_address.flat}"
-        }
-    
     @staticmethod
     def add_user():
-        name = request.form['name']
-        email = request.form['email']
-        password = request.form['password']
-
-        emails = db.session.query(User.email).all() # type: ignore
-        emails = [email[0] for email in emails]
-
-        if len(password) < 6:
-            current_app.logger.warning("Регистрация не удалась: короткий пароль.")
-            return {"success": False, "message": "Пароль меньше 6 символов."}
-
-        if email in emails:
-            current_app.logger.warning(f"Регистрация не удалась: Email {email} уже используется.")
-            return {"success": False, "message": "Аккаунт с данным Email уже зарегистрирован."}
-
-        hashed_password = generate_password_hash(password)
-        person = User(name=name, email=email, password=hashed_password) # type: ignore
         try:
-            db.session.add(person)
+            name = text(request.form.get('name'), 'Имя', 25)
+            email = valid_email(request.form.get('email'))
+            password = request.form.get('password', '')
+            if not 6 <= len(password) <= 128:
+                raise ValueError('Пароль должен содержать от 6 до 128 символов')
+            if email == current_app.config.get('ADMIN_EMAIL', '').strip().lower() or User.query.filter(func.lower(User.email) == email).first():
+                raise ValueError('Аккаунт с данным Email уже зарегистрирован')
+            user = User(name=name, email=email, password=generate_password_hash(password))
+            db.session.add(user)
             db.session.commit()
-            current_app.logger.info(f"Успешная регистрация: {email}")
+            establish_session(user)
+            return {'success': True, 'message': 'Вы успешно зарегистрировались!'}
+        except ValueError as error:
+            db.session.rollback()
+            return {'success': False, 'message': str(error)}
+        except IntegrityError:
+            db.session.rollback()
+            return {'success': False, 'message': 'Аккаунт с данным Email уже зарегистрирован'}
 
-            user = User.query.filter_by(email=email).first()
-            if user and check_password_hash(user.password, password):
-                session['user_id'] = user.id
-                current_app.logger.debug(f"Пользователь {email} вошел после регистрации.")
-            return {"success": True, "message": "Вы успешно зарегистрировались!"}
-        except Exception as e:
-            current_app.logger.error(f"Ошибка при регистрации пользователя {email}: {str(e)}")
-            return {"success": False, "message": "Ошибка авторизации, повторите попытку."}
-        
     @staticmethod
     def log_user(admin_email, admin_password):
-        email = request.form['email']
-        password = request.form['password']
+        failure = {'success': False, 'admin': False, 'message': 'Неправильно введен пароль или Email'}
+        try:
+            email = valid_email(request.form.get('email'))
+        except ValueError:
+            return failure
+        password = request.form.get('password', '')
+        if not 6 <= len(password) <= 128:
+            return failure
+        user = User.query.filter(func.lower(User.email) == email).first()
+        if not user:
+            return failure
+        admin = bool(admin_email and admin_password and email == admin_email.strip().lower() and password == admin_password)
+        if not admin and (not user.password or not check_password_hash(user.password, password)):
+            return failure
+        establish_session(user, admin)
+        return {'success': True, 'admin': admin, 'message': 'Вы вошли в систему!'}
 
-        if not email or not password:
-            current_app.logger.warning("Попытка входа с пустыми полями.")
-            return {"success": False, "admin": False, "message": "Ошибка, обязательные поля пустые."}
-        if len(password) < 6:
-            current_app.logger.warning("Попытка входа с коротким паролем.")
-            return {"success": False, "admin": False, "message": "Ошибка, длина пароля меньше 6 символов."}
-
-        user = User.query.filter_by(email=email).first()
-
-        print(email, admin_email, password, admin_password)
-        if user:
-            if not user.is_google:
-                if email == admin_email and password == admin_password:
-                    session['admin'] = True
-                    session['user_id'] = user.id
-                    current_app.logger.info(f"Администратор {email} вошел в систему.")
-                    return {"success": True, "admin": True, "message": "Вы вошли в систему как Админ!"}
-
-
-                if check_password_hash(user.password, password):
-                    session['user_id'] = user.id
-                    current_app.logger.info(f"Пользователь {email} успешно вошел.")
-                    return {"success": True, "admin": False, "message": "Вы успешно вошли в аккаунт!"}
-                else:
-                    current_app.logger.warning(f"Неудачная попытка входа: {email}")
-                    return {"success": False, "admin": False, "message": "Ошибка входа, неправильно введен пароль или email."}
-            else:
-                current_app.logger.warning("Попытка входа в аккаунт созданный при помощи Google")
-                return {"success": False, "admin": False, "message": "Ошибка входа, Аккаунт создан через Google. Войдите через Google."}
-        else:
-            current_app.logger.warning(f"Неудачная попытка входа: {email}")
-            return {"success": False, "admin": False, "message": "Ошибка входа, неправильно введен пароль или email."}
-    
     @staticmethod
     def log_user_from_google():
-        from main import oauth
-        # 1. Завершаем авторизацию и получаем токен доступа
-        token = oauth.google.authorize_access_token()
-
-        # 2. Из токена ID получаем информацию о пользователе (email, name)
-        user_info = oauth.google.get('https://www.googleapis.com/oauth2/v3/userinfo').json()
-
-        google_email = user_info.get("email")
-        google_name = user_info.get("name")
-
-        user = User.query.filter_by(email=google_email).first()
-
-        if user:
-            session['user_id'] = user.id
-            current_app.logger.info(f"Пользователь {google_email} успешно вошел.")
-            return {'success': True, "message": "Вы успешно вошли в аккаунт!"}
-
-        else:
-            person = User(name=google_name, email=google_email) # type: ignore
-
-            try:
-                db.session.add(person)
+        from web.app.oauth import finish_google_flow
+        from authlib.integrations.base_client.errors import OAuthError
+        from requests.exceptions import RequestException
+        try:
+            claims, link_id = finish_google_flow()
+            subject = claims['sub']
+            google_email = valid_email(claims.get('email'))
+            linked = User.query.filter_by(google_sub=subject).first()
+            if link_id is not None:
+                user = db.session.get(User, link_id)
+                if linked is not None and linked.id != user.id:
+                    raise ValueError('Этот Google-аккаунт уже привязан к другому пользователю')
+                if user.google_sub and user.google_sub != subject:
+                    raise ValueError('К профилю уже привязан другой Google-аккаунт')
+                user.google_sub = subject
                 db.session.commit()
-
-                user = User.query.filter_by(email=google_email).first()
-                user.is_google = True # type: ignore
-
-                db.session.add(user)
+                return {'success': True, 'message': 'Google-аккаунт привязан к профилю'}
+            if linked is None:
+                reserved = current_app.config.get('ADMIN_EMAIL', '').strip().lower()
+                if google_email == reserved or User.query.filter(func.lower(User.email) == google_email).first():
+                    raise ValueError('Этот Email уже используется. Войдите способом, выбранным при регистрации.')
+                name = str(claims.get('name') or claims.get('given_name') or 'Google user').strip()[:25]
+                linked = User(name=name, email=google_email, password='')
+                linked.is_google = True
+                linked.google_sub = subject
+                db.session.add(linked)
                 db.session.commit()
-                current_app.logger.info(f"Пользователь {google_email} успешно доавблен")
+                log_action('registration', actor_id=linked.id, method='google')
+            establish_session(linked)
+            return {'success': True, 'message': 'Вы вошли через Google'}
+        except ValueError as error:
+            db.session.rollback()
+            return {'success': False, 'message': str(error)}
+        except OAuthError:
+            db.session.rollback()
+            current_app.logger.warning('Google отклонил авторизацию или OAuth state')
+        except IntegrityError:
+            db.session.rollback()
+            current_app.logger.warning('Конфликт регистрации или привязки Google')
+        except RequestException:
+            db.session.rollback()
+            current_app.logger.warning('Google OAuth временно недоступен')
+        except Exception:
+            db.session.rollback()
+            current_app.logger.exception('Ошибка проверки Google ID token')
+        return {'success': False, 'message': 'Не удалось войти через Google. Повторите попытку.'}
 
-                session['user_id'] = user.id # type: ignore
-                return {"success": True, "message": "Вы успешно авторизовались!"}
-
-
-            except Exception as e:
-                current_app.logger.error(f"Ошибка при регистрации пользователя {google_email}: {str(e)}")
-                return {"success": False, "message": "Ошибка авторизации, повторите попытку"}
-            
     @staticmethod
     def add_admin():
-        admin = User.query.filter_by(email=os.getenv("ADMIN_EMAIL")).first()
-        if not admin:
-            new_admin = User(
-                name="admin",
-                password=generate_password_hash(os.getenv("ADMIN_PASSWORD")), # type: ignore
-                email=os.getenv("ADMIN_EMAIL") # type: ignore
-            ) # type: ignore
-            try:
-                db.session.add(new_admin)
-                db.session.commit()
-                current_app.logger.info("Создан новый админ аккаунт.")
-            except Exception as e:
-                current_app.logger.error(f"Ошибка при создании админа: {str(e)}")
-        else:
-            current_app.logger.debug("Админ уже существует, создание не требуется.")
+        email = valid_email(current_app.config.get('ADMIN_EMAIL'))
+        password = current_app.config.get('ADMIN_PASSWORD', '')
+        if not 6 <= len(password) <= 128:
+            raise ValueError('ADMIN_PASSWORD должен содержать от 6 до 128 символов')
+        if not User.query.filter(func.lower(User.email) == email).first():
+            db.session.add(User(name='admin', email=email, password=generate_password_hash(password)))
+            db.session.commit()

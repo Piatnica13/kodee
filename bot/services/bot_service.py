@@ -8,6 +8,7 @@ from .handlers.messages.actions import action_with_product, change_product, add_
 from telebot.apihelper import ApiTelegramException
 
 from .handlers.utils import incorrect_input
+from .access import allowed
 
 
 CALLBACK_ROUTES = {
@@ -15,7 +16,7 @@ CALLBACK_ROUTES = {
     "catalog": callback_catalog,
     "count": count,
     "material": material,
-    "role": role, 
+    "role": role,
     "notify": notify,
     "product_action": product_action,
     "exclusive": exclusive,
@@ -45,6 +46,10 @@ class BotService:
 
 
     def check_callbacks(self, call):
+        if not allowed(call.message, call.from_user):
+            return
+        if not isinstance(call.data, str) or len(call.data) > 64:
+            raise ValueError("Некорректная команда")
         try:
             action = call.data.split(":")[0]
             handler = CALLBACK_ROUTES.get(action)
@@ -57,8 +62,10 @@ class BotService:
                 return
             raise
 
-    
+
     def check_text_msg(self, msg):
+        if not allowed(msg):
+            return
         state = self.ctx.fsm.get(msg.chat.id)
 
         if not state:
@@ -74,17 +81,19 @@ class BotService:
         if callable(route):
             return route(ctx=self.ctx, msg=msg)
 
-        action_with_product(self.ctx, msg, route)      
+        action_with_product(self.ctx, msg, route)
 
 
 
     def check_image(self, msg):
+        if not allowed(msg):
+            return
         state = self.ctx.fsm.get(msg.chat.id)
 
-        if not state:
+        if not state or state.get('state') not in {'addProduct:images', 'waitChange:images'}:
             incorrect_input(ctx=self.ctx, msg=msg)
             return
-        
+
         if not state.get('images'):
             state['images'] = []
 

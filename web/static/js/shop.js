@@ -99,11 +99,11 @@ function renderProducts(products, bool) {
       
       const productCard = `
       <article class="product-card" data-aos="fade-up" data-aos-delay="100">
-      <a href="/product/${products[i].slug}" style="color: var(--black); text-decoration: none;">
-      <img src="${products[i].image}" alt="${products[i].name}" class="product-image">
-      <h2 class="product-title">${products[i].name}</h2>
+      <a href="${productURL(products[i].slug)}" style="color: var(--black); text-decoration: none;">
+      <img src="${productImage(products[i].image)}" alt="${escapeHTML(products[i].name)}" class="product-image">
+      <h2 class="product-title">${escapeHTML(products[i].name)}</h2>
       <div class="test">
-      <h2 class="product-price">${products[i].price}&#8376;</h2>
+      <h2 class="product-price">${escapeHTML(products[i].price)}&#8376;</h2>
       <div class="DivInfo">
       <img src = "/static/icon/black/sumka.png" data-icon="sumka.png" class = "Con2Icon" alt = "Сумка">
       <p class="BthInfo"><ins style="text-decoration: line"><span>Подробнее</span></ins></p>
@@ -120,11 +120,11 @@ function renderProducts(products, bool) {
       
       const productCard = `
       <article class="product-card" data-aos="fade-up" data-aos-delay="100">
-      <a href="/product/${products[i].slug}" style="color: var(--black); text-decoration: none;">
-      <img src="${products[i].image}" alt="${products[i].name}" class="product-image">
-      <h2 class="product-title">${products[i].name}</h2>
+      <a href="${productURL(products[i].slug)}" style="color: var(--black); text-decoration: none;">
+      <img src="${productImage(products[i].image)}" alt="${escapeHTML(products[i].name)}" class="product-image">
+      <h2 class="product-title">${escapeHTML(products[i].name)}</h2>
       <div class="test">
-      <h2 class="product-price">${products[i].price}&#8376;</h2>
+      <h2 class="product-price">${escapeHTML(products[i].price)}&#8376;</h2>
       <div class="DivInfo">
       <img src = "/static/icon/black/sumka.png" data-icon="sumka.png" class = "Con2Icon" alt = "Сумка">
       <p class="BthInfo"><ins><span>Подробнее</span></ins></p>
@@ -303,7 +303,7 @@ const filter = params.get("filter");
 if (filter) {
   const filters = filter.split(',');
   filters.forEach(f => {
-    const cb = document.querySelector(`input[type="checkbox"][data-value="${f}"]`);
+    const cb = Array.from(document.querySelectorAll('input[type="checkbox"][data-value]')).find(input => input.dataset.value === f);
     if (cb) {
       cb.checked = true;
       cb.dispatchEvent(new Event('change'));

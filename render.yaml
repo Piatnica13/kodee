@@ -1,0 +1,45 @@
+# Optional Render Blueprint. This creates a PAID 0.5-CPU / 512-MB web service with a disk.
+# Apply only when ready to deploy. It does not create or migrate any database.
+services:
+  - type: web
+    name: kodee
+    runtime: docker
+    plan: 0.5c-512mb
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /healthz
+    disk:
+      name: product-images
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: BOT_TOKEN
+        sync: false
+      - key: BOT_ALLOWED_USER_IDS
+        sync: false
+      - key: BOT_WEBHOOK_SECRET
+        sync: false
+      - key: PUBLIC_HTTPS
+        value: "true"
+      - key: SESSION_COOKIE_SECURE
+        value: "true"
+      - key: PROXY_X_FOR
+        value: "0"
+      - key: PROXY_X_PROTO
+        value: "0"
+      - key: PROXY_X_HOST
+        value: "0"
+      - key: PROXY_X_PORT
+        value: "0"
+      - key: WEB_WORKERS
+        value: "1"
+      - key: PRODUCT_IMAGES_DIR
+        value: /var/data/productImgs

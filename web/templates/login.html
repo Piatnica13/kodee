@@ -83,6 +83,7 @@
         <button id="ButtonSignIn" type="submit">Вход</button>
       </div>
     </form>
+    {% if config.GOOGLE_CLIENT_ID and config.GOOGLE_CLIENT_SECRET %}
     <div id="loginGoogleDiv">
       <a href="/login/google"
         ><button id="loginGoogleBth">
@@ -93,6 +94,7 @@
           /></button
       ></a>
     </div>
+    {% endif %}
     <div>
       <p id="loginP">
         Еще нет аккаунта? <a href="/register" id="LogIn">Регистрация</a>

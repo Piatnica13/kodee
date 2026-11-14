@@ -1,109 +1,77 @@
+import os
+from urllib.parse import urlsplit
 from flask import Flask
-from dotenv import load_dotenv
-from db.models import db
-from config import Config
-from web.app.log import setup_logging
-from web.app.admin import admin
 from flask_wtf import CSRFProtect
 from flask_cors import CORS
-from authlib.integrations.flask_client import OAuth
-from werkzeug.middleware.proxy_fix import ProxyFix
-import os
-
-def create_app():
-    app = Flask(__name__, template_folder="web/templates", static_folder="web/static")
-    
-
-    app.wsgi_app = ProxyFix(
-        app.wsgi_app,
-        x_for=1,
-        x_proto=1,
-        x_host=1
-    )
-
-    
-    # Логи (log.py)
-    setup_logging(app)
-    app.logger.info("Логирование настроено.")
+from db.models import db
+from config import Config, load_environment
+from web.app.log import setup_logging
+from web.app.admin import admin
+from web.app.headers import init_headers
+from web.app.proxy import init_proxy
+from web.app.oauth import init_oauth
 
 
-    # Подключение .env файла
-    load_dotenv('.password.env')
-    app.logger.info("Файл .env загружен.")
+def env_bool(name, default):
+    value = os.getenv(name)
+    if value is None:
+        return default
+    if value.lower() not in {'true', 'false', '1', '0'}:
+        raise ValueError(f'{name}: допустимы true/false или 1/0')
+    return value.lower() in {'true', '1'}
 
 
-    # Подключение правил
+def create_app(test_config=None):
+    if test_config is None:
+        load_environment()
+    app = Flask(__name__, template_folder='web/templates', static_folder='web/static')
     app.config.from_object(Config)
-
-
-    # Подключение базы данных
-    app.config['SQLALCHEMY_DATABASE_URI'] =  os.getenv("DATABASE_URL")
-        
-    # Инициализация соединения
-    db.init_app(app) 
-    app.logger.info("База данных инициализирована.")
-    
-    
-    app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
-        'pool_pre_ping': True
-    }
-
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    app.logger.info("Настройки базы данных заданы (POSTGRES).")
-
-
-    # Создание ключа
-    app.secret_key = os.getenv("SECRET_KEY")
-    app.logger.info(f"Секретный ключ загружен из .env.")
-
-
-    # Инициализация админ панели
-    admin.init_app(app)
-    app.logger.info("Админ панель инициализирована.")
-    
-
-    # Cookie Безопасность
+    base = os.getenv('APP_BASE_URL') or os.getenv('RENDER_EXTERNAL_URL') or 'https://kodee.kz'
+    database_url = os.getenv('DATABASE_URL')
+    if database_url and database_url.startswith('postgres://'):
+        database_url = 'postgresql://' + database_url[len('postgres://'):]
     app.config.update(
-        SESSION_COOKIE_SECURE=True,      # Только через HTTPS
-        SESSION_COOKIE_HTTPONLY=True,    # JS не получит доступ к cookie
-        SESSION_COOKIE_SAMESITE='Lax'    # Защита от CSRF
+        SECRET_KEY=os.getenv('SECRET_KEY'),
+        SQLALCHEMY_DATABASE_URI=database_url,
+        ADMIN_EMAIL=os.getenv('ADMIN_EMAIL', ''),
+        ADMIN_PASSWORD=os.getenv('ADMIN_PASSWORD', ''),
+        LOG_DIR=os.getenv('LOG_DIR', 'logs'),
+        PRODUCT_IMAGES_DIR=os.getenv('PRODUCT_IMAGES_DIR') or None,
+        PUBLIC_HTTPS=env_bool('PUBLIC_HTTPS', False),
+        APP_BASE_URL=base,
+        SESSION_COOKIE_SECURE=env_bool('SESSION_COOKIE_SECURE', urlsplit(base).scheme == 'https'),
+        TRUSTED_HOSTS=[value.strip() for value in os.getenv('TRUSTED_HOSTS', '').split(',') if value.strip()],
+        TRUSTED_PROXY_CIDRS=[value.strip() for value in os.getenv('TRUSTED_PROXY_CIDRS', '').split(',') if value.strip()],
+        GOOGLE_CLIENT_ID=os.getenv('GOOGLE_CLIENT_ID', ''),
+        GOOGLE_CLIENT_SECRET=os.getenv('GOOGLE_CLIENT_SECRET', ''),
+        BOT_TOKEN=os.getenv('BOT_TOKEN'),
+        BOT_WEBHOOK_SECRET=os.getenv('BOT_WEBHOOK_SECRET', ''),
+        WEBHOOK_URL=os.getenv('WEBHOOK_URL', ''),
+        BOT_ALLOWED_USER_IDS={int(value.strip()) for value in os.getenv('BOT_ALLOWED_USER_IDS', '').split(',') if value.strip()},
     )
-    app.logger.info("Cookie настроено")
-
-    # Регистрация блюпринтов
+    for name in ('X_FOR', 'X_PROTO', 'X_HOST', 'X_PORT'):
+        app.config['PROXY_' + name] = int(os.getenv('PROXY_' + name, '0'))
+    if test_config is not None:
+        app.config.update(test_config)
+    if not app.secret_key or not app.config.get('SQLALCHEMY_DATABASE_URI'):
+        raise RuntimeError('Задайте SECRET_KEY и DATABASE_URL')
+    setup_logging(app)
+    init_headers(app)
+    init_proxy(app)
+    db.init_app(app)
+    admin.init_app(app)
+    init_oauth(app)
     from web.app.routes import web_api
     from bot.api.api import bot_api
-
     app.register_blueprint(web_api)
     app.register_blueprint(bot_api)
-
-
-    # CSRF Безопасность
     csrf = CSRFProtect(app)
     csrf.exempt(bot_api)
-    app.logger.info("CSRF настроено")
-
-    
-    # IOS Безопасность
-    CORS(app, 
-        origins=["https://kodee.kz"],
-        supports_credentials=True,
-        methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-        allow_headers=["Content-Type", "Authorization"])
+    CORS(app, origins=[app.config['APP_BASE_URL']], supports_credentials=True,
+         methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+         allow_headers=['Content-Type', 'Authorization', 'X-CSRFToken'])
+    from bot.bot.bot import start_bot
+    from db.maintenance import register_commands
+    start_bot(app)
+    register_commands(app)
     return app
-
-
-def create_oauth(app):
-    # OAuth google
-    oauth = OAuth(app)
-    app.logger.info("OAuth создано")
-
-    # Настройка OAuth google
-    oauth.register(
-        name='google',
-        client_id=os.getenv("GOOGLE_CLIENT_ID"),
-        client_secret=os.getenv("GOOGLE_CLIENT_SECRET"),
-        server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
-        client_kwargs={'scope': 'openid email profile'}
-    )
-    return oauth

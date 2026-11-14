@@ -13,9 +13,11 @@ productForm.addEventListener("submit", async (event) => {
         const response = await fetch('/admin/add_imgs', {
             method: "POST",
             body: formData
-        })
+        });
+        const result = await response.json();
+        if (!response.ok || !result.success) throw new Error(result.error || 'Ошибка загрузки');
+        showToast('Изображения успешно добавлены');
     }
-    catch{}
+    catch(error){ showToast(error.message || 'Ошибка загрузки'); }
 
-    showToast(`Фотки товаров успешно добавлены ${document.querySelector('#productName').value}`);
 });

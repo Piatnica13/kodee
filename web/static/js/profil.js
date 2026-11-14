@@ -241,3 +241,5 @@ function NotTach() {
         bthAddress.style.pointerEvents = `auto`;
     }, 600);
 }
+document.querySelectorAll('[data-address-choice]').forEach(input => input.addEventListener('change', showButton));
+document.querySelectorAll('[data-delete-address]').forEach(button => button.addEventListener('click', () => markForDeletion(Number(button.dataset.deleteAddress))));

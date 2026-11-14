@@ -248,7 +248,7 @@
                     class="ProfilImgs"
                   />
                   <input
-                    name="name"
+                    name="name" value="{{ user.name or '' }}"
                     type="text"
                     placeholder="Имя"
                     class="ProfilChangeInfoInp"
@@ -261,7 +261,7 @@
                     class="ProfilImgs"
                   />
                   <input
-                    name="last_name"
+                    name="last_name" value="{{ user.last_name or '' }}"
                     type="text"
                     placeholder="Фамилия"
                     class="ProfilChangeInfoInp"
@@ -275,7 +275,7 @@
                     class="ProfilImgs"
                   />
                   <input
-                    name="phone"
+                    name="phone" value="{{ user.phone or '' }}"
                     type="number"
                     placeholder="Телефон"
                     class="ProfilChangeInfoInp"
@@ -288,7 +288,7 @@
                     class="ProfilImgs"
                   />
                   <input
-                    name="email"
+                    name="email" value="{{ user.email or '' }}"
                     type="email"
                     placeholder="Email"
                     class="ProfilChangeInfoInp"
@@ -330,7 +330,7 @@
                         class="ProfilAddRadio"
                         value="г.{{ address.city }} ул.{{ address.street }} д.{{
                           address.home }} кв.{{ address.flat }}"
-                        onchange="ShowButton()"
+                        data-address-choice
                         checked
                       />
                       {% else %}
@@ -340,7 +340,7 @@
                         class="ProfilAddRadio"
                         value="г.{{ address.city }} ул.{{ address.street }} д.{{
                           address.home }} кв.{{ address.flat }}"
-                        onchange="showButton()"
+                        data-address-choice
                       />
                       {% endif %}
                       <span class="checkmark"></span>
@@ -354,7 +354,7 @@
                       <img
                         src="/static/icon/black/delete.png"
                         id="ProfilDelImgs"
-                        onclick="markForDeletion({{ address.id }})"
+                        data-delete-address="{{ address.id }}"
                         data-icon="delete.png"
                       />
                     </div>

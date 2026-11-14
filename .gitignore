@@ -17,7 +17,6 @@ env/
 
 .env
 .env.*
-!.env.example
 
 # =========================
 # Logs
@@ -55,3 +54,43 @@ Thumbs.db
 *.temp
 *.swp
 *.swo
+
+# Secrets, local audit and generated artifacts
+audit/
+.password.env
+*.env
+*.sqlite
+*.sqlite3
+*.db
+.coverage
+htmlcov/
+.pytest_cache/
+.ruff_cache/
+*.log
+
+.aws/
+.codex/
+.agents/
+.ssh/
+!.env.example
+
+# Local PostgreSQL cluster and credentials
+.local/
+
+# Runtime data, credentials and database backups
+instance/
+secrets/
+backups/
+*.pem
+*.key
+*.p12
+*.pfx
+*.crt
+*.sql
+*.sql.gz
+*.dump
+*.backup
+*.bak
+*.env.*
+.env*
+!.env.example

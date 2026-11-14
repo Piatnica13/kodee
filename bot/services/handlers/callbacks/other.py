@@ -3,7 +3,7 @@ from .product import change_call, add_product, change_call_images, delete_produc
 from .catalog import show_catalog
 from db.models import Sale, Certificate
 
-from datetime import timedelta
+from datetime import timedelta, date as calendar_date
 
 
 PRODUCT_ACTIONS = {
@@ -38,9 +38,9 @@ def product_action(ctx, call):
                 call.message.message_id,
                 state
             )
-        
+
     if action == 'change':
-        field = call.data.split(":")[2] 
+        field = call.data.split(":")[2]
         if field == 'images':
             change_call_images(ctx, call)
             return
@@ -164,7 +164,9 @@ def deposit(ctx, call):
         if not data or "date" not in data:
             return
 
-        date = data["date"][period_type]
+        if period_type not in {'start', 'end'} or date_type not in {'year', 'month', 'day'} or not value.isdigit():
+            raise ValueError('Некорректная дата')
+        date = data['date'][period_type]
 
         date[date_type] = value
 
@@ -207,25 +209,29 @@ def deposit(ctx, call):
                 start = f"{data['date']['start']['year']}.{data['date']['start']['month']}.{data['date']['start']['day']}"
                 end = f"{data['date']['end']['year']}.{data['date']['end']['month']}.{data['date']['end']['day']}"
 
+                start_date = calendar_date(*(int(data['date']['start'][part]) for part in ('year', 'month', 'day')))
+                end_date = calendar_date(*(int(data['date']['end'][part]) for part in ('year', 'month', 'day')))
+                if start_date > end_date:
+                    raise ValueError('Начало периода позже окончания')
                 records = ctx.db.session.query(Sale).filter(
-                    Sale.sold_at >= start,
-                    Sale.sold_at <= end
+                    Sale.sold_at >= start_date,
+                    Sale.sold_at <= end_date
                 ).all()
-        
+
                 text = ''
                 count_gold=0
                 count_silver=0
                 count_exclusive = 0
-        
+
                 for index, record in enumerate(records, start=1):
                     count_gold += record.quantity if record.material == 'gold' else 0
                     count_silver += record.quantity if record.material == 'silver' else 0
                     count_exclusive += 1 if record.exclusive_id is not None else 0
-        
+
                     text += (f"{index}. {record.name} {record.quantity}шт {record.material}\n{record.price * record.quantity}тг {record.price_chet * record.quantity}тг\n{record.sold_at}\n\n")
-        
+
                 text += f"\nПериод: {start}-{end}\nЗолото: {count_gold}\nСеребро: {count_silver}\nЭксклюзивов: {count_exclusive}\nЦена: {sum(record.price * record.quantity for record in records)}\nДепозит: {sum(record.price_chet * record.quantity for record in records)}"
-                
+
                 markup = ctx.markup.back()
 
         else:
@@ -251,14 +257,14 @@ def certificate(ctx, call):
                 "state": "waitCertificate",
                 "action": "add"
             })
-        
+
         ctx.bot.edit_message_text(
                 chat_id=call.message.chat.id,
                 message_id=call.message.message_id,
                 reply_markup=ctx.markup.back(),
                 text=f"Введите сумму сертификата: "
             )
-        
+
         return
     elif len(action) == 2 and action[1] == "show":
         certificates = ctx.db.session.query(Certificate).all()
@@ -292,7 +298,7 @@ def certificate(ctx, call):
         )
         return
 
-    
+
 
     ctx.bot.edit_message_text(
             chat_id=call.message.chat.id,

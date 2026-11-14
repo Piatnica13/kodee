@@ -261,7 +261,7 @@ function processQueue() {
     message.style.transition = `opacity 0.5s ease-in-out, transform 0.5s ease-in-out`;
     message.innerHTML = `
     <div class="message">
-    <h3>${text}</h3>
+    <h3>${escapeHTML(text)}</h3>
     </div>`;
     
     toast.appendChild(message)

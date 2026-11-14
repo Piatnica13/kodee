@@ -1,6 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import relationship, object_session
-from sqlalchemy import JSON
+from sqlalchemy import JSON, CheckConstraint, Index, func
 from sqlalchemy.types import BigInteger, Date
 
 from datetime import datetime, timezone
@@ -11,6 +11,12 @@ db = SQLAlchemy()
 
 class User(db.Model):
     __tablename__ = "users"
+
+    __table_args__ = (
+        Index('uq_users_email_normalized', func.lower(func.nullif(func.trim(db.column('email')), '')), unique=True),
+        Index('uq_users_telegram_id', 'telegram_id', unique=True),
+        Index('uq_users_google_sub', 'google_sub', unique=True),
+    )
 
     id = db.Column(db.Integer, primary_key=True)
     telegram_id = db.Column(BigInteger, nullable=True, default=None)
@@ -24,15 +30,16 @@ class User(db.Model):
     phone = db.Column(db.String(11), nullable=True, default="")
     email = db.Column(db.String(75))
 
-    address = db.Column(db.String(50), nullable=True, default="")
+    address = db.Column(db.String(150), nullable=True, default="")
     addresses = db.relationship('Address', backref='person', lazy=True, cascade="all, delete")
 
-    favourites = db.Column(JSON, default=[])
-    basket = db.Column(JSON, default=[])
+    favourites = db.Column(JSON, default=list)
+    basket = db.Column(JSON, default=list)
 
     role = db.Column(db.String, default="seller")
     material = db.Column(db.String, default="gold")
     is_google = db.Column(db.Boolean(), default=False)
+    google_sub = db.Column(db.String(255), nullable=True)
 
 
     def __init__(self, telegram_id=None, name='', last_name='', user_name='', first_name='', password='', phone='', email='', address='', material="gold", role="seller"):
@@ -43,7 +50,7 @@ class User(db.Model):
         self.first_name = first_name
         self.password = password
         self.phone = phone
-        self.email = email
+        self.email = email.strip().lower() if email else None
         self.address = address
         self.material = material
         self.role = role
@@ -68,6 +75,10 @@ class Address(db.Model):
 
 
 class Product(db.Model):
+    __table_args__ = tuple(
+        CheckConstraint(f'"{field}" >= 0', name=f'ck_product_{field}_nonnegative')
+        for field in ('gold', 'silver', 'form_gold', 'form_silver', 'price', 'price_chet', 'weight', 'G')
+    )
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100))
     short_name = db.Column(db.String(100))
@@ -88,7 +99,7 @@ class Product(db.Model):
     slug = db.Column(db.String(100), unique=True)
     images = relationship("Product_image", backref="product", lazy=True, cascade="all, delete-orphan")
 
-    
+
     def image(self):
         """Возвращает путь к первому изображению (где num=1) или стандартное"""
         first_image = (
@@ -97,8 +108,8 @@ class Product(db.Model):
             .filter_by(product_id=self.id, num=1)
             .first()
         )
-        return first_image.img1 if first_image else "/static/image/defaultt.jpg"
-    
+        return first_image.img1 if first_image else "/static/image/imgShop/BrasletsAndEgg.webp"
+
     def __init__(self, name, short_name, price, weight, concept, category,  descriptions, slug, G = 0, gold = 0, silver = 0, form_gold = 0, form_silver = 0, price_chet = 0):
         self.name = name
         self.short_name = short_name
@@ -119,16 +130,20 @@ class Product(db.Model):
         return f"<{self.slug}>"
 
 class Product_image(db.Model):
+    __table_args__ = (
+        Index('uq_product_image_number', 'product_id', 'num', unique=True),
+        CheckConstraint('num >= 1 AND num <= 4', name='ck_product_image_number'),
+    )
     id = db.Column(db.Integer, primary_key=True)
-    num = db.Column(db.Integer)
+    num = db.Column(db.Integer, nullable=False)
     product_id = db.Column(db.Integer, db.ForeignKey("product.id"), nullable=False)
     img1 = db.Column(db.String(255), nullable=False)
-    
+
     def __init__(self, num, product_id, img1):
         self.num = num
         self.product_id = product_id
         self.img1 = img1
-    
+
     def __repr__(self):
         return f"<Image {self.product_id}>"
 
@@ -189,3 +204,9 @@ class Certificate(db.Model):
 
     def __init__(self, amount):
         self.amount = amount
+
+class BotState(db.Model):
+    __tablename__ = 'bot_states'
+    chat_id = db.Column(BigInteger, primary_key=True)
+    data = db.Column(JSON, nullable=False, default=dict)
+    expires_at = db.Column(db.Float, nullable=False)

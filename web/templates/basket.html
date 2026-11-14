@@ -52,7 +52,7 @@
           </article>
           <a class="basketproductImg" href="product/{{ product.slug }}">
             <img
-              src="/static/image/productImgs/{{ product.slug }}/img1.webp"
+              src="{{ product.image() }}"
               class="basketproductImgs"
               alt="Продукция"
             />

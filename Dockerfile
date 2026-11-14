@@ -1,63 +1,18 @@
 FROM python:3.14-slim
-
 WORKDIR /kodee
-
 RUN apt-get update \
     && apt-get install -y --no-install-recommends ca-certificates \
-    && update-ca-certificates \
-    && rm -rf /var/lib/apt/lists/*
-
+    && rm -rf /var/lib/apt/lists/* \
+    && useradd --create-home --uid 10001 kodee
 COPY requirements.txt .
-
-RUN pip install -r requirements.txt
-
-COPY . .
-
-ENV FLASK_APP=main.py
-
-CMD ["python", "main.py"]
-
-
-# services:
-#   web:
-#     build: .
-# 
-#     ports:
-#       - 5000:5000
-# 
-#     depends_on:
-#       - postgres
-# 
-#     env_file:
-#       - .env
-# 
-#     environment:
-#       ADMIN_EMAIL: ${ADMIN_EMAIL}
-#       ADMIN_PASSWORD: ${ADMIN_PASSWORD}
-#       DATABASE_URL: ${DATABASE_URL}
-#       FLASK_ENV: ${FLASK_ENV}
-#       SECRET_KEY: ${SECRET_KEY}
-# #GOOGLE_CLIEND_ID=
-# #GOOGLE_CLIENT_SECRET=
-# 
-#     volumes:
-#       - .:/kodee
-# 
-#     command: flask run --host 0.0.0.0
-# 
-#   postgres:
-#     image: postgres:18.4
-# 
-#     env_file:
-#      - .env
-# 
-#     environment:
-#       POSTGRES_USER: ${POSTGRES_USER}
-#       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-#       POSTGRES_DB: ${POSTGRES_DB}
-# 
-#     volumes:
-#       - postgres_data:/var/lib/postgresql
-# 
-# volumes:
-#   postgres_data:
+RUN pip install --no-cache-dir -r requirements.txt
+COPY __init__.py config.py main.py gunicorn.conf.py ./
+COPY bot/ ./bot/
+COPY db/ ./db/
+COPY web/ ./web/
+RUN mkdir -p logs certificates instance /var/data/productImgs \
+    && chown -R kodee:kodee logs certificates instance /var/data
+ENV FLASK_APP=main.py PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 \
+    PRODUCT_IMAGES_DIR=/var/data/productImgs
+USER kodee
+CMD ["gunicorn", "-c", "gunicorn.conf.py", "main:app"]

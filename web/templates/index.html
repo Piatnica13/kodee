@@ -165,7 +165,7 @@
             <strong>Символ</strong>&nbspпос&shy;то&shy;ян&shy;ства и силы духа.
           </h4>
           <h4 style="font-size: 0.83em">
-            <span itemprop="price" content="{{ products[0] }}">-{{ products[0].price }}</span>
+            <span itemprop="price" content="{{ products['beskonechnost'].price if products.get('beskonechnost') else '' }}">-{{ products['beskonechnost'].price if products.get('beskonechnost') else 'Уточняйте' }}</span>
             <span itemprop="priceCurrency" content="KZT">&#8376;</span>
           </h4>
         </div>
@@ -202,7 +202,7 @@
             Источник жизни, тепла и света.
           </h4>
           <h4 style="font-size: 0.83em">
-            <span itemprop="price" content="{{ products[17].price }}">-{{ products[17].price }}</span>
+            <span itemprop="price" content="{{ products['solntse'].price if products.get('solntse') else 'Уточняйте' }}">-{{ products['solntse'].price if products.get('solntse') else 'Уточняйте' }}</span>
             <span itemprop="priceCurrency" content="KZT">&#8376;</span>
           </h4>
         </div>
@@ -256,7 +256,7 @@
             пу&shy;те&shy;шест&shy;ве&shy;нни&shy;ков.
           </h4>
           <h4 style="font-size: 0.83em">
-            <span itemprop="price" content="{{ products[31].price }}">-{{ products[31].price }}</span>
+            <span itemprop="price" content="{{ products['samolet'].price if products.get('samolet') else 'Уточняйте' }}">-{{ products['samolet'].price if products.get('samolet') else 'Уточняйте' }}</span>
             <span itemprop="priceCurrency" content="KZT">&#8376;</span>
           </h4>
         </div>
@@ -294,7 +294,7 @@
             Древо жизни символ&nbspмудрости.
           </h4>
           <h4 style="font-size: 0.83em">
-            <span itemprop="price" content="{{ products[8].price }}">-{{ products[8].price }}</span>
+            <span itemprop="price" content="{{ products['derevo'].price if products.get('derevo') else 'Уточняйте' }}">-{{ products['derevo'].price if products.get('derevo') else 'Уточняйте' }}</span>
             <span itemprop="priceCurrency" content="KZT">&#8376;</span>
           </h4>
         </div>
@@ -347,7 +347,7 @@
             <strong>Символ</strong>ценности и статуса.
           </h4>
           <h4 style="font-size: 0.83em">
-            <span itemprop="price" content="{{ products[3] }}">-{{ products[3].price }}</span>
+            <span itemprop="price" content="{{ products['brilliant'].price if products.get('brilliant') else '' }}">-{{ products['brilliant'].price if products.get('brilliant') else 'Уточняйте' }}</span>
             <span itemprop="priceCurrency" content="KZT">&#8376;</span>
           </h4>
         </div>
@@ -387,7 +387,7 @@
             Клевер символ&nbspудачи.
           </h4>
           <h4 style="font-size: 0.83em">
-            <span itemprop="price" content="{{ products[6].price }}">-{{ products[6].price }}</span>
+            <span itemprop="price" content="{{ products['klever'].price if products.get('klever') else 'Уточняйте' }}">-{{ products['klever'].price if products.get('klever') else 'Уточняйте' }}</span>
             <span itemprop="priceCurrency" content="KZT">&#8376;</span>
           </h4>
         </div>

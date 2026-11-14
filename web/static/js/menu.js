@@ -185,7 +185,7 @@ menuInp.addEventListener("input", () => {
             return;
         }
 
-        fetch(`/search?query=${query}`)
+        fetch(`/search?query=${encodeURIComponent(query)}`)
             .then(response => response.json())
             .then(data => {
                 menuDiv.innerHTML = "";
@@ -200,11 +200,11 @@ menuInp.addEventListener("input", () => {
                     productDiv.classList.add("menuProductDiv");
                     productDiv.innerHTML = `
                       <div class="product-card">
-                        <a href="/product/${product.slug}" style="color: var(--black)">
-                          <img src="${product.image}" alt="${product.name}" class="product-imagee">
-                          <p class="product-title-menu">${product.name}</p>
+                        <a href="${productURL(product.slug)}" style="color: var(--black)">
+                          <img src="${productImage(product.image)}" alt="${escapeHTML(product.name)}" class="product-imagee">
+                          <p class="product-title-menu">${escapeHTML(product.name)}</p>
                           <div class="test">
-                            <p class="product-price">${product.price}&#8376;</p>
+                            <p class="product-price">${escapeHTML(product.price)}&#8376;</p>
                             <div class="DivInfo">
                               <img src="/static/icon/black/sumka.png" data-icon="sumka.png" class="Con2Icon" alt="Сумка">
                               <p class="BthInfo"><ins>Подробнее</ins></p>
@@ -235,7 +235,7 @@ menuInpp.addEventListener("input", () => {
             return;
         }
 
-        fetch(`/search?query=${queryy}`)
+        fetch(`/search?query=${encodeURIComponent(queryy)}`)
             .then(response => response.json())
             .then(data => {
                 menuDivv.innerHTML = "";
@@ -249,12 +249,12 @@ menuInpp.addEventListener("input", () => {
                     let productDiv = document.createElement("div");
                     productDiv.classList.add("menuProductDiv");
                     productDiv.innerHTML = `
-                      <a href="/product/${product.slug}" style="color: var(--black)">
+                      <a href="${productURL(product.slug)}" style="color: var(--black)">
                         <div class="product-card">
-                            <img src="${product.image}" alt="${product.name}" class="product-imagee">
-                            <p class="product-title">${product.name}</p>
+                            <img src="${productImage(product.image)}" alt="${escapeHTML(product.name)}" class="product-imagee">
+                            <p class="product-title">${escapeHTML(product.name)}</p>
                             <div class="test">
-                                <p class="product-price">${product.price}&#8376;</p>
+                                <p class="product-price">${escapeHTML(product.price)}&#8376;</p>
                                 <div class="DivInfo">
                                     <img src="/static/icon/black/sumka.png" class="Con2Icon" data-icon="sumka.png" alt="Сумка">
                                     <p class="BthInfo"><ins>Подробнее</ins></p>

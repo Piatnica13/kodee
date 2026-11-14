@@ -1,7 +1,13 @@
+function readSelectedItems() {
+    try {
+        const value = JSON.parse(localStorage.getItem('selectedItems'));
+        return Array.isArray(value) ? value.map(String) : null;
+    } catch (_) { return null; }
+}
 document.addEventListener("DOMContentLoaded", () => {
     loadProducts()
     let checkboxs = document.querySelectorAll(".basketcheckboxItem");
-    let selected = JSON.parse(localStorage.getItem("selectedItems"));
+    let selected = readSelectedItems();
     
     if(!selected){
         selected = Array.from(checkboxs).map(box => box.dataset.id);
@@ -13,7 +19,7 @@ document.addEventListener("DOMContentLoaded", () => {
         box.checked = selected.includes(id);
         
         box.addEventListener("click", () => {
-            let update = JSON.parse(localStorage.getItem("selectedItems")) || [];
+            let update = readSelectedItems() || [];
             
             if (box.checked){
                 update.push(id);
@@ -28,7 +34,7 @@ document.addEventListener("DOMContentLoaded", () => {
     })
 })
 
-allProducts = [];
+let allProducts = [];
 
 async function loadProducts() {
     const response = await fetch("/api/products")
@@ -128,7 +134,7 @@ nolike.forEach(element => {
 
 let delete_product= document.querySelectorAll(".basketDelete");
 let checkboxs = document.querySelectorAll(".basketcheckboxItem");
-function deleteFunc(){
+function deleteFunc(event){
     let element = event.currentTarget;
     let Id = element.dataset.id; 
 
@@ -156,7 +162,7 @@ function deleteFunc(){
             removeDiv = document.querySelector(`#card-${Id}`)
             removeDiv.remove();
 
-            let update = JSON.parse(localStorage.getItem("selectedItems")) || [];
+            let update = readSelectedItems() || [];
             update = update.filter(item => item !== Id);
             localStorage.setItem("selectedItems", JSON.stringify(update));
             showToast(data.message)
@@ -183,15 +189,15 @@ function rightProduct() {
             let productDiv = document.querySelector(`#basketRightProductId${box.dataset.id}`)
             productDiv.remove();
         } catch (error) {}
-        if (box.checked == true){
+        if (box.checked == true && product){
             let productShow = document.createElement("div");
-            productShow.innerHTML += `<p style = "font-size: 1.2rem">${num}. ${product.name} — ${product.price}&#8376;</p>`;
+            productShow.innerHTML += `<p style = "font-size: 1.2rem">${num}. ${escapeHTML(product.name)} — ${escapeHTML(product.price)}&#8376;</p>`;
             productShow.classList.add("basketRightProducts");
             productShow.id = `basketRightProductId${productId}`;
 
             divForProduct.appendChild(productShow)
             num++;
-            sum += product.price;
+            sum += Number(product.price) || 0;
         }
     });
     basketPay.innerHTML = `<h3 style = "font-size: 1.5rem">К оплате — ${sum}&#8376;</h3>`;
@@ -200,53 +206,28 @@ function rightProduct() {
 let messageBth = document.querySelector("#basketWhatsAppBth");
 messageBth.addEventListener("click", messageBthFunc)
 
-function messageBthFunc(){
-    if (document.querySelector("#basketAddress").value != ``) {
-        
-        let checkedProductF = document.querySelectorAll(".basketRightProducts");
-    
-        let checkedProductS = [];
-    
-        checkedProductF.forEach((e)=>{
-            checkedProductS.push(e.innerText.split(" — ")[0].split(". ")[1]);
-        })
-    
-        let allName = document.querySelectorAll(".productName");
-        let allColor = document.querySelectorAll(".basketColor");
-        let allSize = document.querySelectorAll(".basketSize");
-        let allMat = document.querySelectorAll(".basketmaterial");
-        
-    
-        let chet = 1;
-        let name = document.querySelector("#basketNamehidden").value;
-        let num = 77003360024;
-        let text = `Здраствуйте! Меня зовут ${name}. Хочу оформить заказ.%0a`;
-        
-        for(let i = 0; i < allName.length; i++){
-            for(let j = 0; j < checkedProductS.length; j++){
-                if(allName[i].innerText == checkedProductS[j]){
-                    text += `
-${chet}) ${allName[i].innerText},%0a
-Цвет нити: ${allColor[i].innerText.split(`Цвет нити`)[1]},%0a
-Размер: ${allSize[i].innerText.split(`Размер`)[1]},%0a
-Материал: ${allMat[i].innerText.split(`Материал`)[1]}%0a
-`
-                    chet++;
-                }
-            }
-        }
-        text += `Удобна доставка на адрес ${document.querySelector("#basketAddress").value}`
-        console.log(text);
-        
-        window.open(`https://wa.me/${num}?text=${text}`, '_blank');
+function messageBthFunc() {
+    const selected = Array.from(checkboxs).filter(box => box.checked)
+        .map(box => ({id: box.dataset.id, product: allProducts.find(item => item.id == box.dataset.id)}))
+        .filter(item => item.product && document.getElementById(`card-${item.id}`));
+    if (!selected.length) { showToast('Выберите товары для заказа'); return; }
+    const addressValue = document.querySelector('#basketAddress').value;
+    if (!addressValue) {
+        formAddress.style.display = 'block';
+        setTimeout(() => { formAddress.style.opacity = '1'; showToast('Адрес не указан'); }, 1);
+        return;
     }
-    else{
-        formAddress.style.display=`block`;
-        setTimeout(() => {
-            formAddress.style.opacity = `1`;
-            showToast("Адрес не указан");
-        }, 1);
-    }
+    const customer = document.querySelector('#basketNamehidden').value;
+    const lines = [`Здравствуйте! Меня зовут ${customer}. Хочу оформить заказ.`];
+    selected.forEach(({id, product}, index) => {
+        const card = document.getElementById(`card-${id}`);
+        lines.push(`${index + 1}) ${product.name}`,
+            card.querySelector('.basketColor').innerText,
+            card.querySelector('.basketSize').innerText,
+            card.querySelector('.basketmaterial').innerText);
+    });
+    lines.push(`Удобна доставка на адрес ${addressValue}`);
+    window.open(`https://wa.me/77003360024?text=${encodeURIComponent(lines.join('\n'))}`, '_blank', 'noopener,noreferrer');
 }
 
 let bthAdd = document.querySelector("#ProfilAddBth");

@@ -6,23 +6,11 @@
 <meta name="csrf_token" content="{{ csrf_token() }}" />
 
 <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "Product",
-    "name": "{{ product.name }}",
-    "image": "{{ product.image() }}",
-    "description": "{{ product.descriptions}}",
-    "brand": {
-      "@type": "Brand",
-      "name": "KoDee Desire"
-    },
-    "offers": {
-      "@type": "Offer",
-      "priceCurrency": "KZT",
-      "price": "{{ product.price }}",
-      "availability": "https://schema.org/InStock"
-    }
-  }
+{{ {"@context": "https://schema.org", "@type": "Product", "name": product.name,
+    "image": product.image(), "description": product.descriptions,
+    "brand": {"@type": "Brand", "name": "KoDee Desire"},
+    "offers": {"@type": "Offer", "priceCurrency": "KZT", "price": product.price,
+               "availability": "https://schema.org/InStock"}} | tojson }}
 </script>
 
 {% endblock %} {% block style %}
@@ -55,6 +43,8 @@
         alt="Продукция"
         id="productImg{{ image.num }}"
       />
+      {% else %}
+      <img src="{{ product.image() }}" class="productFotos" alt="{{ product.name }}" id="productImg1" />
       {% endfor %}
     </article>
     <article id="productMenuDiv">
@@ -111,7 +101,7 @@
           <div id="productHeard">
             <img
               src="/static/icon/black/heart.png"
-              alt="Нравиться"
+              alt="Удалить из избранного"
               class="productHeardImgs"
               id="productLike"
               data-icon="heart.png"
@@ -119,7 +109,7 @@
             />
             <img
               src="/static/icon/black/blackHeart.png"
-              alt="Поставить Нравиться"
+              alt="Добавить в избранное"
               class="productHeardImgs"
               id="productGetLike"
               data-icon="blackHeart.png"
@@ -129,7 +119,7 @@
             <input type="hidden" id="b" value="{{ basket }}" />
           </div>
           <div id="productDivBth">
-            <button id="productBth" onclick="urlBth('{{user.name}}')">
+            <button id="productBth" data-user-name="{{ user.name }}">
               Добавить
             </button>
           </div>
