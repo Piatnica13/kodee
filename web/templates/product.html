@@ -1,57 +1,47 @@
 {% extends "base.html" %} {% block title %}
-<title>
-  {{ product.name }} — KoDee Desire - БРАСЛЕТЫ ЖЕЛАНИЙ | ЗОЛОТО 585 ПРОБЫ |
-  КОЛЬЕ НА ЛЕСКЕ | КАРАГАНДА
-</title>
+<title>{{ product_title(product) }}</title>
 <meta name="csrf_token" content="{{ csrf_token() }}" />
-
-<script type="application/ld+json">
-{{ {"@context": "https://schema.org", "@type": "Product", "name": product.name,
-    "image": product.image(), "description": product.descriptions,
-    "brand": {"@type": "Brand", "name": "KoDee Desire"},
-    "offers": {"@type": "Offer", "priceCurrency": "KZT", "price": product.price,
-               "availability": "https://schema.org/InStock"}} | tojson }}
-</script>
-
+<script type="application/ld+json">{{ product_schema|tojson }}</script>
 {% endblock %} {% block style %}
 <link rel="stylesheet" href="/static/css/product.css" />
 {% endblock %} {% block body%}
 <section id="productBody">
   <section class="div100px"></section>
+  <nav class="product-contact product-breadcrumbs" aria-label="Путь к изделию">
+    <a href="{{ url_for('web.index') }}">Главная</a> / <a href="{{ url_for('web.shop') }}">Каталог</a>
+    {% if product.category == 'Кулон' %} / <a href="{{ url_for('web.thread_bracelets') }}">Кулоны на нити</a>
+    {% elif product.category and '/' not in product.category %} / <a href="{{ url_for('web.category', category=product.category) }}">{{ 'Монетки с гравировкой' if product.category == 'Монеточка' else category_label(product.category) }}</a>{% endif %} / <span aria-current="page">{{ product_display_name(product) }}</span>
+  </nav>
   <section id="productMainDiv">
     <article id="productImgsDiv">
       <div id="productGalochkas">
-        <img
-          src="/static/icon/black/galochka.png"
-          style="width: 50px; height: 50px"
-          alt="Назад"
-          id="profilGalochka1"
-          data-icon="galochka.png"
-        />
-        <img
-          src="/static/icon/black/galochka.png"
-          style="width: 50px; height: 50px"
-          alt="Вперед"
-          id="profilGalochka2"
-          data-icon="galochka.png"
-        />
+        <button type="button" id="profilGalochka1" aria-label="Предыдущее фото"><span aria-hidden="true"></span></button>
+        <button type="button" id="profilGalochka2" aria-label="Следующее фото"><span aria-hidden="true"></span></button>
       </div>
-      {% for image in product.images %}
+      {% for image in product_gallery_images(product) %}
       <img
         src="{{ image.img1 }}"
         class="productFotos"
-        alt="Продукция"
+        role="button" tabindex="0" aria-label="Увеличить: {{ product_photo_alt(product, image.num) }}"
+        alt="{{ product_photo_alt(product, image.num) }}"
         id="productImg{{ image.num }}"
+        decoding="async" {% if loop.first %}fetchpriority="high"{% else %}loading="lazy"{% endif %}
       />
       {% else %}
-      <img src="{{ product.image() }}" class="productFotos" alt="{{ product.name }}" id="productImg1" />
+      <img src="{{ product.image() }}" class="productFotos" alt="Пример украшения KoDee Desire" role="button" tabindex="0" aria-label="Увеличить фото изделия" id="productImg1" />
       {% endfor %}
+      {% if not product.images %}<p>Фотография этого изделия пока не добавлена.</p>{% endif %}
     </article>
     <article id="productMenuDiv">
       <div id="productMenuUp">
-        <h1 style="font-size: 1.5rem">{{ product.name }}</h1>
+        <h1 style="font-size: 1.5rem">{{ product_display_name(product) }}</h1>
         <h2 style="font-size: 0.83em; opacity: 0.7">{{ product.id }}</h2>
-        <h2>{{ product.price }}&#8376;</h2>
+        {% if product.price %}<h2>{{ format_price(product.price) }} ₸</h2>{% else %}<p>Цену уточняйте у мастерской</p>{% endif %}
+        {% if product.weight %}<p>Вес изделия: {{ (product.weight|string).replace('.', ',') }} г</p>{% endif %}
+        {% if product_description(product) %}<p class="product-story">{{ product_description(product) }}</p>{% endif %}
+        {% if product.category == 'Монеточка' %}<p class="product-contact"><a href="{{ url_for('web.individual_order', side='one' if 's-odnoi-storony' in product.slug else 'two' if 's-dvukh-storon' in product.slug else none) }}#request">Примеры гравировки и индивидуальный заказ</a></p>{% endif %}
+        {% if related %}<p class="product-related"><a href="{{ url_for('web.product', slug=related.slug) }}">Сравнить: {{ product_display_name(related) }}</a></p>{% endif %}
+        <p>Комплектацию и итоговую цену для выбранных параметров уточните у мастерской.</p>
       </div>
       <div id="productMenuMidle">
         <div id="productDivSize">
@@ -82,7 +72,7 @@
           </div>
         </div>
         <div id="productDivMaterial" class="productInputs">
-          <h2>Материал изделия</h2>
+          <h2>Желаемый материал</h2>
           <select id="productMaterial" class="productSelects">
             <option>Золото 585 (Красное)</option>
             <option>Серебро 925</option>
@@ -119,34 +109,30 @@
             <input type="hidden" id="b" value="{{ basket }}" />
           </div>
           <div id="productDivBth">
-            <button id="productBth" data-user-name="{{ user.name }}">
-              Добавить
-            </button>
+            {% if user %}<button id="productBth" data-user-name="{{ user.name }}">Добавить в корзину</button>
+            {% else %}<a id="productBth" href="{{ url_for('web.login', next=request.path) }}">Войти, чтобы добавить в корзину</a>{% endif %}
           </div>
         </div>
+        <p class="product-contact"><a id="productContactWhatsApp" href="https://wa.me/77003360024?text={{ ('Здравствуйте! Интересует ' ~ product_display_name(product) ~ ' (артикул ' ~ product.id ~ '). https://kodee.kz' ~ url_for('web.product', slug=product.slug))|urlencode }}" target="_blank" rel="noopener noreferrer" data-product-id="{{ product.id }}">Уточнить об изделии в WhatsApp</a></p>
         <div id="CharactersRight">
-          <section id="productDescriptions">
-            <h2>Описание</h2>
-            <p style="font-size: 1.25rem">{{ product.descriptions }}</p>
-          </section>
           <section id="productCharacter">
             <div id="productAllCharacter">
               <article class="DivsCharacters">
                 <h3>Артикул</h3>
                 <p>{{ product.id }}</p>
               </article>
-              <article class="DivsCharacters">
+              {% if product.weight %}<article class="DivsCharacters">
                 <h3>Вес</h3>
-                <p>&#8776;{{ product.weight }}</p>
-              </article>
-              <article class="DivsCharacters">
+                <p>&#8776;{{ product.weight }}&nbsp;г</p>
+              </article>{% endif %}
+              {% if product.concept %}<article class="DivsCharacters">
                 <h3>Концепция</h3>
                 <p>{{ product.concept}}</p>
-              </article>
-              <article class="DivsCharacters">
+              </article>{% endif %}
+              {% if product.category %}<article class="DivsCharacters">
                 <h3>Категория</h3>
                 <p>{{ product.category }}</p>
-              </article>
+              </article>{% endif %}
             </div>
           </section>
         </div>
@@ -154,10 +140,6 @@
     </article>
   </section>
   <section id="CharactersBottom">
-    <article id="productDescriptions">
-      <h2>Описание</h2>
-      <h3 style="font-size: 1.25rem">{{ product.descriptions }}</h3>
-    </article>
     <article id="productCharacter">
       <h2>Характеристики</h2>
       <div id="productAllCharacter">
@@ -165,22 +147,26 @@
           <h3>Артикул</h3>
           <p>{{ product.id }}</p>
         </article>
-        <article>
+        {% if product.weight %}<article>
           <h3>Вес</h3>
           <p>&#8776;{{ product.weight }}&nbsp;гр</p>
-        </article>
-        <article>
+        </article>{% endif %}
+        {% if product.concept %}<article>
           <h3>Концепция</h3>
           <p>{{ product.concept}}</p>
-        </article>
-        <article>
+        </article>{% endif %}
+        {% if product.category %}<article>
           <h3>Категория</h3>
           <p>{{ product.category }}</p>
-        </article>
+        </article>{% endif %}
       </div>
     </article>
   </section>
   <section id="productPodDiv"></section>
+  <dialog id="productZoom" aria-label="Увеличенная фотография изделия">
+    <button type="button" id="productZoomClose" aria-label="Закрыть увеличенное фото">✕</button>
+    <img id="productZoomImage" alt="" />
+  </dialog>
 </section>
 {% endblock %} {% block script %}
 <script src="/static/js/product.js"></script>

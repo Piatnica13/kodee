@@ -1,63 +1,11 @@
 {% extends "base.html" %}
 
 {% block title %}
-<title>KoDee Desire — кулоны желаний из золота и серебра|Караганда</title>
+<title>KoDee Desire — кулоны на нити и украшения с гравировкой | Караганда</title>
 
-<meta name="description" content="KoDee Desire. Создаем кулоны желаний из золота 585 и серебра 925. Браслеты на нити, кулоны, колье, эксклюзивные украшения. Бесплатная подарочная упаковка.">
-
-<script type="application/ld+json" defer>
-{
-  "@context": "https://schema.org",
-  "@type": "JewelryStore",
-  "name": "KoDee Desire",
-  "description": "Мастерская авторских украшений из золота 585 и серебра 925 в Караганде. Специализация: кулоны желаний, браслеты на нити, индивидуальная гравировка.",
-  "image": "/static/image/icon/logo.png",
-  "url": "https://kodee.kz/",
-  "telephone": "+77003360024",
-  "address": {
-    "@type": "PostalAddress",
-    "streetAddress": "ул. Муканова, 32",
-    "addressLocality": "Караганда",
-    "addressRegion": "Карагандинская область",
-    "postalCode": "49000",
-    "addressCountry": "KZ"
-  },
-  "openingHours": "Mo-Su 06:00-22:00",
-  "priceRange": "10000-70000",
-  "sameAs": [
-    "https://www.instagram.com/kodee_jewellery",
-    "https://wa.me/77003360024"
-  ],
-  "hasOfferCatalog": {
-    "@type": "OfferCatalog",
-    "name": "Ювелирные изделия",
-    "itemListElement": [
-      {
-        "@type": "OfferCatalog",
-        "name": "Кулоны из золота",
-        "itemListElement": [
-          {
-            "@type": "Offer",
-            "itemOffered": {
-              "@type": "Product",
-              "name": "Кулон 'Бесконечность'",
-              "image": "/static/image/productImgs/beskonechnost/img1.png",
-              "offers": {
-                "@type": "Offer",
-                "price": "37000",
-                "priceCurrency": "KZT"
-              }
-            }
-          }
-        ]
-      }
-    ]
-  }
-}
-</script>
 {% endblock %}{% block style %}
 <link rel="stylesheet" href="/static/css/index.css" media="all" />
-{% endblock %} {% block body %}  {% if admin %}
+{% endblock %} {% block body %} {% if admin %}
 <a
   href="/admin/panel"
   style="
@@ -86,7 +34,7 @@
 <div class="div100px"></div>
 
 <section id="Contener1" data-aos="fade-up" data-aos-delay="0">
-  <p class="visually-hidden">Основатель <strong>KoDee Desire</strong>, компании по изготовлению и продаже <strong>кулонов желаний</strong> и <strong>браслетов на нити</strong></p>
+  <h1 class="visually-hidden">Кулоны желаний на нити и украшения с гравировкой KoDee Desire</h1>
   <div id="Con1Img">
     
     <img
@@ -125,52 +73,46 @@
   </blockquote>
 </section>
 
+<nav class="home-intent-links" aria-label="Выбор украшения">
+  <p>Знаки, которые хочется носить. Слова, которые хочется сохранить.</p>
+  <a href="{{ url_for('web.thread_bracelets') }}">Кулоны на нити</a>
+  <a href="{{ url_for('web.category', category='Монеточка') }}">Монетки с гравировкой</a>
+  <a href="{{ url_for('web.category', category='Бегунок') }}">Бегунки</a>
+</nav>
 
 <div style="width: 100%; height: 100%; background: var(--main-bg); display: flex; justify-content: center;">
-  <h2 style="background: var(--main-bg); font-size: 1.7rem">Хиты <strong>браслетов желаний</strong></h2>
+  <h2 style="background: var(--main-bg); font-size: 1.7rem">Символы на <strong>нити</strong></h2>
 </div>
 
 <section id="Contener3">
-  <article
+  {% if products.get('beskonechnost') %}
+<article
     class="Con3grup1"
     data-aos="fade-up"
     data-aos-delay="0"
-    itemscope
-    itemtype="http://schema.org/Product"
-    aria-labelledby="product-beskonechnost-title"
   >
-  <meta itemprop="name" content="Кулон 'Бесконечность' из золота 585 пробы">
-  <meta itemprop="image" content="/static/image/productImgs/beskonechnost/img1.webp"/>
-  <meta itemprop="sku" content="KD-BSK-001">
-  <meta itemprop="mpn" content="KD-BSK-001">
     <a href="/product/beskonechnost">
       <img
         src="/static/image/productImgs/beskonechnost/img2.webp"
-        alt="Золотой Кулон 'Бесконечность' 585 пробы"
+        alt="{{ products['beskonechnost'].name }}"
         class="Con3Imgs"
       />
     </a>
     <div
       class="Con3Divs"
-      itemprop="offers"
-      itemscope
-      itemtype="http://schema.org/Offer"
     >
-    <a itemprop="url" href="/product/beskonechnost" style="text-decoration: none; color: var(--black)">
-      <meta itemprop="availability" content="https://schema.org/InStock">
-      <meta itemprop="priceValidUntil" content="2025-12-31">
+    <a href="/product/beskonechnost" style="text-decoration: none; color: var(--black)">
         <div class="Con3Text">
           <h3 style="font-size: 1.33em"><strong>Кулон</strong> "Бес&shy;конечно&shy;сть"</h3>
-          <h4 style="font-size: 0.83em" itemprop="description">
-            <strong>Символ</strong>&nbspпос&shy;то&shy;ян&shy;ства и силы духа.
+          <h4 style="font-size: 0.83em">
+            О желании, к которому хочется возвращаться.
           </h4>
           <h4 style="font-size: 0.83em">
-            <span itemprop="price" content="{{ products['beskonechnost'].price if products.get('beskonechnost') else '' }}">-{{ products['beskonechnost'].price if products.get('beskonechnost') else 'Уточняйте' }}</span>
-            <span itemprop="priceCurrency" content="KZT">&#8376;</span>
+            <span>{% if products['beskonechnost'].price %}{{ format_price(products['beskonechnost'].price) }} ₸{% else %}Цену уточняйте{% endif %}</span>
           </h4>
         </div>
-      </div>
-    </a>
+      </a>
+    </div>
   </article>
   <a class="con3a" href="/product/beskonechnost" style="color: var(--black)">
     <div class="con3Btn">
@@ -178,32 +120,25 @@
       <span>о <strong>кулоне</strong> "Бесконечность"</span>
     </div>
   </a>
+{% endif %}
 
-  <article
+  {% if products.get('solntse') %}
+<article
     class="Con3grup2"
     data-aos="fade-up"
     data-aos-delay="0"
-    itemscope
-    itemtype="http://schema.org/Product"
-    aria-labelledby="product-solntse-title"
   >
-  <meta itemprop="name" content="Кулон 'Солнце' из золота 585 пробы">
-  <meta itemprop="image" content="/static/image/productImgs/solntse/img1.webp">
     <div
       class="Con3Divs"
-      itemprop="offers"
-      itemscope
-      itemtype="http://schema.org/Offer"
     >
-      <a itemprop="url" href="/product/solntse" style="text-decoration: none; color: var(--black)">
+      <a href="/product/solntse" style="text-decoration: none; color: var(--black)">
         <div class="Con3Text">
           <h3 style="font-size: 1.33em"><strong>Кулон</strong> "Солнце"</h3>
-          <h4 style="font-size: 0.83em" itemprop="description">
-            Источник жизни, тепла и света.
+          <h4 style="font-size: 0.83em">
+            О тепле, которое хочется сохранить.
           </h4>
           <h4 style="font-size: 0.83em">
-            <span itemprop="price" content="{{ products['solntse'].price if products.get('solntse') else 'Уточняйте' }}">-{{ products['solntse'].price if products.get('solntse') else 'Уточняйте' }}</span>
-            <span itemprop="priceCurrency" content="KZT">&#8376;</span>
+            <span>{% if products['solntse'].price %}{{ format_price(products['solntse'].price) }} ₸{% else %}Цену уточняйте{% endif %}</span>
           </h4>
         </div>
       </a>
@@ -212,7 +147,7 @@
       <img
         src="/static/image/productImgs/solntse/img4.webp"
         class="Con3Imgs"
-        alt="Золотой Кулон 'Солнце' 585 пробы"
+        alt="{{ products['solntse'].name }}"
       />
     </a>
   </article>
@@ -222,46 +157,38 @@
       <span>о <strong>кулоне</strong> "Солнце"</span>
     </div>
   </a>
+{% endif %}
 
   <button id="con3more">Больше</button>
 
-  <article
+  {% if products.get('samolet') %}
+<article
     class="Con3grup1 con3invis"
     data-aos="fade-up"
     data-aos-delay="0"
-    itemscope
-    itemtype="http://schema.org/Product"
-    aria-labelledby="product-samolet-title"
   >
-  <meta itemprop="name" content="Кулон 'Самолёт' из золота 585 пробы">
-  <meta itemprop="image" content="/static/image/productImgs/samolet/img1.webp">
     <a href="/product/samolet">
       <img
         src="/static/image/productImgs/samolet/img3.webp"
-        alt="Золотой Кулон 'Самолёт' 585 пробы"
+        alt="{{ products['samolet'].name }}"
         class="Con3Imgs"
       />
     </a>
     <div
       class="Con3Divs"
-      itemprop="offers"
-      itemscope
-      itemtype="http://schema.org/Offer"
     >
-      <a itemprop="url" href="/product/samolet" style="text-decoration: none; color: var(--black)">
+      <a href="/product/samolet" style="text-decoration: none; color: var(--black)">
         <div class="Con3Text">
           <h3 style="font-size: 1.33em"><strong>Кулон</strong> "Самолёт"</h3>
-          <h4 style="font-size: 0.83em" itemprop="description">
-            Для меч&shy;та&shy;те&shy;лей и
-            пу&shy;те&shy;шест&shy;ве&shy;нни&shy;ков.
+          <h4 style="font-size: 0.83em">
+            О местах, где ещё предстоит побывать.
           </h4>
           <h4 style="font-size: 0.83em">
-            <span itemprop="price" content="{{ products['samolet'].price if products.get('samolet') else 'Уточняйте' }}">-{{ products['samolet'].price if products.get('samolet') else 'Уточняйте' }}</span>
-            <span itemprop="priceCurrency" content="KZT">&#8376;</span>
+            <span>{% if products['samolet'].price %}{{ format_price(products['samolet'].price) }} ₸{% else %}Цену уточняйте{% endif %}</span>
           </h4>
         </div>
-            </div>
       </a>
+    </div>
   </article>
   <a class="con3a  con3invis" href="/product/samolet" style="color: var(--black)">
     <div class="con3Btn">
@@ -269,41 +196,34 @@
       <span>о <strong>кулоне</strong> "Самолёт"</span>
     </div>
   </a>
+{% endif %}
   
-  <article
+  {% if products.get('derevo') %}
+<article
     class="Con3grup2  con3invis"
     data-aos="fade-up"
     data-aos-delay="0"
-    itemscope
-    itemtype="http://schema.org/Product"
-    aria-labelledby="product-derevo-title"
   >
-  <meta itemprop="name" content="Кулон 'Дерево' из золота 585 пробы">
-  <meta itemprop="image" content="/static/image/productImgs/derevo/img1.webp">
     <div
       class="Con3Divs"
-      itemprop="offers"
-      itemscope
-      itemtype="http://schema.org/Offer"
     >
-      <a itemprop="url" href="/product/derevo" style="text-decoration: none; color: var(--black)">
+      <a href="/product/derevo" style="text-decoration: none; color: var(--black)">
 
         <div class="Con3Text">
           <h3 style="font-size: 1.33em"><strong>Кулон</strong> "Дерево"</h3>
-          <h4 style="font-size: 0.83em" itemprop="description">
-            Древо жизни символ&nbspмудрости.
+          <h4 style="font-size: 0.83em">
+            О связи с теми, кого хочется держать рядом.
           </h4>
           <h4 style="font-size: 0.83em">
-            <span itemprop="price" content="{{ products['derevo'].price if products.get('derevo') else 'Уточняйте' }}">-{{ products['derevo'].price if products.get('derevo') else 'Уточняйте' }}</span>
-            <span itemprop="priceCurrency" content="KZT">&#8376;</span>
+            <span>{% if products['derevo'].price %}{{ format_price(products['derevo'].price) }} ₸{% else %}Цену уточняйте{% endif %}</span>
           </h4>
         </div>
-            </div>
       </a>
+    </div>
     <a href="/product/derevo">
       <img
         src="/static/image/productImgs/derevo/img2.webp"
-        alt="Золотой Кулон 'Дерево' 585 пробы"
+        alt="{{ products['derevo'].name }}"
         class="Con3Imgs"
       />
     </a>
@@ -314,45 +234,36 @@
       <span>о <strong>кулоне</strong> "Дерево"</span>
     </div>
   </a>
+{% endif %}
 
-  <article
+  {% if products.get('brilliant') %}
+<article
     class="Con3grup1  con3invis"
     data-aos="fade-up"
     data-aos-delay="0"
-    itemscope
-    itemtype="http://schema.org/Product"
-    aria-labelledby="product-beskonechnost-title"
   >
-  <meta itemprop="name" content="Кулон 'Бриллиант' из золота 585 пробы">
-  <meta itemprop="image" content="/static/image/productImgs/brilliant/img1.webp"/>
     <a href="/product/brilliant">
       <img
         src="/static/image/productImgs/brilliant/img1.webp"
-        alt="Золотой Кулон 'Бриллиант' 585 пробы"
+        alt="{{ products['brilliant'].name }}"
         class="Con3Imgs"
       />
     </a>
     <div
       class="Con3Divs"
-      itemprop="offers"
-      itemscope
-      itemtype="http://schema.org/Offer"
     >
-    <a itemprop="url" href="/product/brilliant" style="text-decoration: none; color: var(--black)">
-      <meta itemprop="availability" content="https://schema.org/InStock">
-      <meta itemprop="priceValidUntil" content="2025-12-31">
+    <a href="/product/brilliant" style="text-decoration: none; color: var(--black)">
         <div class="Con3Text">
           <h3 style="font-size: 1.33em"><strong>Кулон</strong> "Бриллиант"</h3>
-          <h4 style="font-size: 0.83em" itemprop="description">
-            <strong>Символ</strong>ценности и статуса.
+          <h4 style="font-size: 0.83em">
+            О достижении, которым хочется гордиться.
           </h4>
           <h4 style="font-size: 0.83em">
-            <span itemprop="price" content="{{ products['brilliant'].price if products.get('brilliant') else '' }}">-{{ products['brilliant'].price if products.get('brilliant') else 'Уточняйте' }}</span>
-            <span itemprop="priceCurrency" content="KZT">&#8376;</span>
+            <span>{% if products['brilliant'].price %}{{ format_price(products['brilliant'].price) }} ₸{% else %}Цену уточняйте{% endif %}</span>
           </h4>
         </div>
-      </div>
-    </a>
+      </a>
+    </div>
   </article>
 
 
@@ -362,41 +273,34 @@
       <span>о <strong>кулоне</strong> "Бриллиант"</span>
     </div>
   </a>
+{% endif %}
 
-  <article
+  {% if products.get('klever') %}
+<article
     class="Con3grup2 con3invis"
     data-aos="fade-up"
     data-aos-delay="0"
-    itemscope
-    itemtype="http://schema.org/Product"
-    aria-labelledby="product-derevo-title"
   >
-  <meta itemprop="name" content="Кулон 'Клевер' из золота 585 пробы">
-  <meta itemprop="image" content="/static/image/productImgs/klever/img1.webp">
     <div
       class="Con3Divs"
-      itemprop="offers"
-      itemscope
-      itemtype="http://schema.org/Offer"
     >
-      <a itemprop="url" href="/product/klever" style="text-decoration: none; color: var(--black)">
+      <a href="/product/klever" style="text-decoration: none; color: var(--black)">
 
         <div class="Con3Text">
           <h3 style="font-size: 1.33em"><strong>Кулон</strong> "Клевер"</h3>
-          <h4 style="font-size: 0.83em" itemprop="description">
-            Клевер символ&nbspудачи.
+          <h4 style="font-size: 0.83em">
+            Об удаче, которую хочется носить с собой.
           </h4>
           <h4 style="font-size: 0.83em">
-            <span itemprop="price" content="{{ products['klever'].price if products.get('klever') else 'Уточняйте' }}">-{{ products['klever'].price if products.get('klever') else 'Уточняйте' }}</span>
-            <span itemprop="priceCurrency" content="KZT">&#8376;</span>
+            <span>{% if products['klever'].price %}{{ format_price(products['klever'].price) }} ₸{% else %}Цену уточняйте{% endif %}</span>
           </h4>
         </div>
-            </div>
       </a>
+    </div>
     <a href="/product/klever">
       <img
         src="/static/image/productImgs/klever/img2.webp"
-        alt="Золотой Кулон 'Клевер' 585 пробы"
+        alt="{{ products['klever'].name }}"
         class="Con3Imgs"
       />
     </a>
@@ -407,6 +311,7 @@
       <span>о <strong>кулоне</strong> "Клевер"</span>
     </div>
   </a>
+{% endif %}
 
 </section>
 <section id="con3catalogDiv">
@@ -420,7 +325,6 @@
 </div>
 
 <section id="Contener4">
-  <h2 class="visually-hidden">Комфорт и долговечность в каждой детали: наши <strong>браслеты</strong> — это не просто <strong>минимализм</strong> и символика, это надёжный <strong>аксессуар</strong> на каждый день.</h2>
   <div id="con4galochki">
     <div class="con4circle">
       <img

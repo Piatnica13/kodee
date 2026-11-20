@@ -5,6 +5,7 @@
 </title>
 {% endblock %} {% block style %}
 <link rel="stylesheet" href="/static/css/register.css" />
+<link rel="stylesheet" href="/static/css/google-auth.css" />
 {% endblock %} {% block body %}
 
 <!-- Обработчик сообщений -->
@@ -28,6 +29,7 @@
     <article>
       <h1 id="MainText">РЕГИСТРАЦИЯ</h1>
     </article>
+    {% if registration_error %}<p class="registration-error" role="alert">{{ registration_error }}</p>{% endif %}
     <form
       method="post"
       id="regForm"
@@ -35,6 +37,7 @@
       autocomplete="on"
     >
       {{ form.hidden_tag() }}
+      {% if return_to %}<input type="hidden" name="next" value="{{ return_to }}" />{% endif %}
       <div id="UserInp">
         <article class="ImgInp">
           <img
@@ -46,6 +49,7 @@
             type="text"
             id="name"
             name="name"
+            value="{{ entered_name|default('') }}"
             alt="Name"
             placeholder="Имя"
             autocomplete="username"
@@ -62,6 +66,7 @@
             type="email"
             id="email"
             name="email"
+            value="{{ entered_email|default('') }}"
             placeholder="E-mail"
             id="email"
             autocomplete="email"
@@ -95,11 +100,13 @@
             class="ImgPass"
           />
         </article>
+        {% include "_privacy_consent.html" %}
         <button type="submit" id="ButtonSignIn">Регистрация</button>
       </div>
     </form>
+    {% if config.GOOGLE_CLIENT_ID and config.GOOGLE_CLIENT_SECRET %}{% include '_google_auth.html' %}{% endif %}
     <div>
-      <p id="regP">Уже есть аккаунт? <a href="/login" id="LogIn">Вход</a></p>
+      <p id="regP">Уже есть аккаунт? <a href="{{ url_for('web.login', next=return_to) if return_to else url_for('web.login') }}" id="LogIn">Вход</a></p>
     </div>
   </div>
 </section>

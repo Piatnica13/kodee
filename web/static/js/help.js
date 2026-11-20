@@ -22,7 +22,7 @@ document.addEventListener("DOMContentLoaded", () => {
         },
         {
         "title": "Как оформить заказ?",
-        "text": `Заказать можно быстро и удобно через <a href="https://wa.me/+77003360024" target="_blank" rel="noopener noreferrer">WhatsApp</a> или воспользуйтесь удобной корзиной на сайте, где представлен весь доступный ассортимент.`
+        "text": `Заказать можно быстро и удобно через <a href="https://wa.me/77003360024" target="_blank" rel="noopener noreferrer">WhatsApp</a> или воспользуйтесь удобной корзиной на сайте, где представлен весь доступный ассортимент.`
         },
         {
         "title": "Какие материалы используем?",

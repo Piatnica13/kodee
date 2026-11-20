@@ -2,7 +2,11 @@
 <html lang="ru">
   <head>
     <meta charset="UTF-8" />
+    {% if request.endpoint == 'web.index' %}
+    <meta name="yandex-verification" content="6e14091a721ddbc5" />
+    {% endif %}
     <script src="/static/js/safe.js"></script>
+    <script src="/static/js/navigation.js" defer></script>
 
     <meta name="csrf-token" content="{{ csrf_token() }}" />
 
@@ -17,54 +21,25 @@
     <!-- Для Instagram (дополнительно) -->
     <meta property="instagram:creator" content="@kodee_jewellery" />
     <meta property="product:brand" content="KoDee Desire" />
-    <meta property="product:price:amount" content="49000" />
-    <meta property="product:price:currency" content="KZT" />
-
-    <!-- Для ВКонтакте специальные -->
-    <meta property="vk:image" content="/static/image/body/obedinenie.webp" />
-    <meta
-      name="keywords"
-      content="кулоны желаний, браслеты на нити, золото 585, Караганда, гравировка украшений"
-    />
-
-    <!-- Обязательные для всех -->
-
-    <meta name="robots" content="index, follow" />
-    <link rel="canonical" href="https://kodee.kz/" />
-
-    <!-- Open Graph / Social Media Meta Tags -->
-    <meta
-      property="og:title"
-      content="KoDee Desire — авторские ювелирные украшения в Караганде"
-    />
+    {% set descriptions = {
+      'web.index': 'KoDee Desire — ювелирная мастерская в Караганде. Кулоны желаний на нити, монетки с гравировкой и бегунки.',
+      'web.shop': 'Кулоны на нити, монетки с гравировкой и бегунки KoDee Desire. Три коллекции, фотографии изделий и цены в каталоге мастерской в Караганде.',
+      'web.contact': 'Контакты ювелирной мастерской KoDee Desire в Караганде: телефон и Instagram.',
+      'web.individual_order': 'Гравировка имени, даты или рисунка на монетке и украшения на заказ KoDee Desire. Посмотрите примеры, сравните монетки и обсудите идею с мастерской в Караганде.',
+      'web.help': 'О мастерской KoDee Desire и украшениях с историей.'
+    } %}
+    {% if product is defined %}
+      <meta name="description" content="{{ product_meta_description(product) }}" />
+    {% elif category is defined %}
+      <meta name="description" content="{{ category_content.get('description', category_label(category) ~ ' в каталоге KoDee Desire. Выберите изделие по названию и описанию, уточните детали у мастерской.') }}" />
+    {% elif request.endpoint in descriptions %}
+      <meta name="description" content="{{ descriptions[request.endpoint] }}" />
+    {% endif %}
+    {% if request.endpoint in ['web.index', 'web.shop', 'web.product', 'web.category', 'web.thread_bracelets', 'web.contact', 'web.individual_order', 'web.help'] %}
+      <link rel="canonical" href="https://kodee.kz{{ url_for(request.endpoint, **(request.view_args or {})) }}" />
+    {% endif %}
     <meta property="og:site_name" content="KoDee Desire" />
-    <meta
-      property="og:description"
-      content="🔮 KoDee Desire — не просто украшения, а проводники ваших желаний. Авторские кулоны из золота 585 и серебра 925 с энергетикой ручной работы. Каждое изделие создается в Караганде с намерением на исполнение мечты. Попробуйте магию ювелирного искусства!"
-    />
-    <meta property="og:image" content="/static/image/body/obedinenie.webp" />
-
-    <meta property="og:type" content="website" />
-    <meta property="og:locale" content="kz_KZT" />
-    <meta property="og:url" content="https://kodee.kz/" />
-
-    <!-- Twitter Card -->
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta
-      name="twitter:title"
-      content="KoDee Desire — ювелирные изделия, браслеты желаний"
-    />
-    <meta name="twitter:image" content="/static/image/body/obedinenie.webp" />
-    <meta
-      name="twitter:description"
-      content="Авторские кулоны из золота и серебра с индивидуальной гравировкой в Караганде"
-    />
-
-    <!-- Гео-метатеги -->
-    <meta name="geo.region" content="KZ-KAR" />
-    <meta name="geo.placename" content="Караганда" />
-    <meta name="geo.position" content="49.803763;73.103562" />
-    <meta name="ICBM" content="49.803763, 73.103562" />
+    <meta property="og:image" content="https://kodee.kz/static/image/body/obedinenie.webp" />
 
     <script>
       const savedTheme = localStorage.getItem("theme") || "light";
@@ -119,67 +94,11 @@
         transition: background 0.5s ease-in-out, color 0.5s ease-in-out;
         font-family: sans-serif;
       }
+      body.page-leaving { opacity: 0; transition: opacity 0.3s ease-in-out; }
     </style>
-    {% block title %} {% endblock %} {% block titlee %}{% endblock %}
-    <!-- Google tag (gtag.js) -->
-    <script
-      async
-      src="https://www.googletagmanager.com/gtag/js?id=G-K2TX71HYVP"
-    ></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag() {
-        dataLayer.push(arguments);
-      }
-      gtag("js", new Date());
-      gtag("config", "G-K2TX71HYVP");
-    </script>
-    <!-- Google tag -->
-
-    <!-- Yandex.Metrika counter -->
-    <script type="text/javascript">
-      (function (m, e, t, r, i, k, a) {
-        m[i] =
-          m[i] ||
-          function () {
-            (m[i].a = m[i].a || []).push(arguments);
-          };
-        m[i].l = 1 * new Date();
-        for (var j = 0; j < document.scripts.length; j++) {
-          if (document.scripts[j].src === r) {
-            return;
-          }
-        }
-        (k = e.createElement(t)),
-          (a = e.getElementsByTagName(t)[0]),
-          (k.async = 1),
-          (k.src = r),
-          a.parentNode.insertBefore(k, a);
-      })(
-        window,
-        document,
-        "script",
-        "https://mc.yandex.ru/metrika/tag.js",
-        "ym"
-      );
-
-      ym(101431606, "init", {
-        clickmap: true,
-        trackLinks: true,
-        accurateTrackBounce: true,
-        webvisor: true,
-        ecommerce: "ShopGrid",
-      });
-    </script>
-    <noscript
-      ><div>
-        <img
-          src="https://mc.yandex.ru/watch/101431606"
-          style="position: absolute; left: -9999px"
-          alt=""
-        /></div
-    ></noscript>
-    <!-- /Yandex.Metrika counter -->
+    {% block titlee %}{% endblock %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/privacy.css') }}" />
+    <script src="{{ url_for('static', filename='js/privacy.js') }}" defer></script>
   </head>
 
   <body>
@@ -221,5 +140,13 @@
     <section id="divMessegeBox"></section>
 
     {% block bodyy %} {% endblock %}
+    <section id="cookie-preferences" class="cookie-preferences" aria-labelledby="cookie-title" hidden
+      {% if config.get('ANALYTICS_ENABLED', True) and request.endpoint in ('web.index', 'web.shop', 'web.category', 'web.thread_bracelets', 'web.product') and not request.query_string %}data-metrika="101431606"{% endif %}>
+      <p id="cookie-title">Cookie помогают сайту работать.</p>
+      <div class="cookie-actions">
+        <button type="button" data-cookie-choice="necessary">Только необходимые</button>
+        <button type="button" data-cookie-choice="analytics">Все cookie</button>
+      </div>
+    </section>
   </body>
 </html>

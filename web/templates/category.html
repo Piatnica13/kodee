@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}<title>{{ category_content.get('title', category_content.get('heading', category_label(category)) ~ ' — KoDee Desire') }}</title>{% endblock %}
+{% block style %}<link rel="stylesheet" href="/static/css/shop.css" />{% endblock %}
+{% block body %}
+<div class="div100px"></div>
+<section id="ShopBody"><div id="PodShopBody">
+  <header class="category-heading"><h1>{{ category_content.get('heading', category_label(category)) }}</h1><p>{{ category_content.get('intro', '') }}</p>
+    {% if category == 'Кулон' and featured is defined %}
+    <p class="category-symbols">{% if featured.get('samolet') %}В дорогу — <a href="{{ url_for('web.product', slug='samolet') }}">Самолёт</a>, о местах, где ещё предстоит побывать. {% endif %}{% if featured.get('klever') %}На удачу — <a href="{{ url_for('web.product', slug='klever') }}">Клевер</a>, четыре лепестка для четырёх добрых смыслов. {% endif %}{% if featured.get('derevo') %}О близких — <a href="{{ url_for('web.product', slug='derevo') }}">Дерево</a>, символ связи поколений. {% endif %}{% if featured.get('korona') %}В честь своего пути — <a href="{{ url_for('web.product', slug='korona') }}">Корона</a>, маленький знак собственного достоинства.{% endif %}</p>
+    <p class="category-note">На странице кулона можно указать цвет нити и размер.</p>
+    {% elif category == 'Монеточка' %}
+    <p><a href="{{ url_for('web.individual_order') }}#examples">Примеры гравировки и индивидуальный заказ</a></p>
+    {% elif category == 'Бегунок' %}
+    <p class="category-note">Вес и цена каждой модели указаны рядом с фотографией.</p>
+    {% endif %}
+  </header>
+  {% include '_catalog_nav.html' %}
+  <section id="productGrid">{% for product in products %}{% include '_product_card.html' %}{% endfor %}</section>
+</div></section>
+{% endblock %}

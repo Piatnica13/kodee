@@ -91,13 +91,57 @@ class OAuthTests(unittest.TestCase):
         self.assertEqual(result.location,'/login')
         self.assertEqual(User.query.filter_by(google_sub='google-person-1').count(),0)
 
+    def accept_signup(self, account_changes=None):
+        first = self.finish()
+        self.assertEqual(first.location, '/register/google/consent')
+        self.assertIsNone(User.query.filter_by(google_sub='google-person-1').first())
+        form = self.client.get(first.location)
+        self.assertIn('name="privacy_consent"', form.text)
+        csrf = self.csrf()
+        refused = self.client.post(first.location, data={'csrf_token': csrf})
+        self.assertEqual(refused.status_code, 400)
+        self.assertIsNone(User.query.filter_by(google_sub='google-person-1').first())
+        from web.app.privacy import CONSENT_VERSION
+        continuation = self.client.post(first.location, data={
+            'csrf_token': csrf, 'privacy_consent': CONSENT_VERSION,
+        })
+        self.assertEqual(continuation.status_code, 302)
+        authorization = parse_qs(urlsplit(continuation.location).query)
+        self.nonce = authorization['nonce'][0]
+        self.state = authorization['state'][0]
+        if account_changes:
+            self.claim_changes.update(account_changes)
+        return self.finish()
+
+    def test_signup_consent_cannot_create_a_different_google_account(self):
+        self.begin()
+        result = self.accept_signup({'sub': 'different-google-account'})
+        self.assertEqual(result.location, '/login')
+        self.assertEqual(User.query.count(), 2)
+
+    def test_declining_google_signup_clears_pending_and_keeps_product(self):
+        path = '/product/test-product'
+        start = self.client.get('/login/google', query_string={'next': path})
+        authorization = parse_qs(urlsplit(start.location).query)
+        self.nonce = authorization['nonce'][0]
+        self.state = authorization['state'][0]
+        consent = self.finish().location
+        self.assertEqual(consent, '/register/google/consent')
+        response = self.client.post(consent, data={'csrf_token': self.csrf(), 'decision': 'decline'})
+        self.assertEqual(response.location, '/login?next=' + path)
+        self.assertEqual(self.client.get(consent).location, '/login')
+        self.assertIsNone(User.query.filter_by(google_sub='google-person-1').first())
+
     def test_google_signup_and_pkce(self):
         data=self.begin()
         self.assertEqual(data['redirect_uri'],['http://localhost/callback'])
         self.assertEqual(data['code_challenge_method'],['S256'])
-        self.assertEqual(self.finish().location,'/')
+        self.assertEqual(self.accept_signup().location,'/')
         user=User.query.filter_by(google_sub='google-person-1').one()
         self.assertTrue(user.is_google)
+        from web.app.privacy import CONSENT_VERSION
+        self.assertEqual(user.privacy_consent_version, CONSENT_VERSION)
+        self.assertIsNotNone(user.privacy_consented_at)
         self.assertEqual(user.email,'google@example.com')
         verifier=self.token_requests[0]['code_verifier'][0]
         digest=base64.urlsafe_b64encode(hashlib.sha256(verifier.encode()).digest()).rstrip(b'=').decode()
@@ -105,6 +149,27 @@ class OAuthTests(unittest.TestCase):
         with self.client.session_transaction() as state:
             self.assertEqual(state['user_id'],user.id)
             self.assertFalse(state['admin'])
+        self.client.get('/logout')
+        self.begin()
+        self.assertEqual(self.finish().location, '/')
+        self.assertEqual(User.query.filter_by(google_sub='google-person-1').count(), 1)
+
+    def test_google_registration_preserves_safe_product_return(self):
+        for path in ('/login', '/register'):
+            page = self.client.get(path, query_string={'next': '/product/samolet'}).get_data(as_text=True)
+            self.assertIn('/login/google?next=/product/samolet', page)
+        result = self.client.get('/login/google', query_string={'next': '/product/samolet'})
+        authorization = parse_qs(urlsplit(result.location).query)
+        self.nonce = authorization['nonce'][0]
+        self.state = authorization['state'][0]
+        self.assertEqual(self.accept_signup().location, '/product/samolet')
+
+    def test_google_return_rejects_external_url(self):
+        result = self.client.get('/login/google', query_string={'next': '//example.com'})
+        authorization = parse_qs(urlsplit(result.location).query)
+        self.nonce = authorization['nonce'][0]
+        self.state = authorization['state'][0]
+        self.assertEqual(self.accept_signup().location, '/')
 
     def test_state_mismatch_never_calls_token_endpoint(self):
         self.begin()
@@ -167,6 +232,7 @@ class OAuthTests(unittest.TestCase):
             self.assertEqual(state['user_id'],self.user.id)
         self.assertEqual(User.query.count(),2)
         self.assertEqual(db.session.get(User,self.user.id).email,'changed@example.com')
+        self.assertIsNone(db.session.get(User,self.user.id).privacy_consented_at)
 
     def test_link_requires_csrf_and_same_session(self):
         self.login()
@@ -189,7 +255,7 @@ class OAuthTests(unittest.TestCase):
         self.assertEqual(self.finish(error='access_denied').location,'/login')
         self.assertFalse(self.token_requests)
         self.begin()
-        self.assertEqual(self.finish().location,'/')
+        self.assertEqual(self.accept_signup().location,'/')
         count=len(self.token_requests)
         self.assertEqual(self.finish().location,'/login')
         self.assertEqual(len(self.token_requests),count)
@@ -233,9 +299,13 @@ class OAuthTests(unittest.TestCase):
         with db.engine.begin() as connection:
             connection.execute(text('DROP INDEX uq_users_google_sub'))
             connection.execute(text('ALTER TABLE users DROP COLUMN google_sub'))
+            connection.execute(text('ALTER TABLE users DROP COLUMN privacy_consent_version'))
+            connection.execute(text('ALTER TABLE users DROP COLUMN privacy_consented_at'))
         upgrade_schema()
         self.assertEqual(User.query.count(),2)
         self.assertIsNone(User.query.first().google_sub)
+        self.assertTrue(all(user.privacy_consented_at is None and user.privacy_consent_version is None
+                            for user in User.query.all()))
 
 
 class ProxyTests(unittest.TestCase):

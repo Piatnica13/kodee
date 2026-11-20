@@ -80,9 +80,9 @@
     })
 
     let masFromCon5 = [
-        {title: "Кулоны", a_filter: "/shop?filter=Кулон", a_img: "/static/image/con5/img4.webp"},
-        {title: "Монетки", a_filter: "/shop?filter=Монеточка", a_img: "/static/image/con5/img3.webp"},
-        {title: "Бегунки", a_filter: "/shop?filter=Бегунок", a_img: "/static/image/con5/img1.webp"},
+        {title: "Кулоны", a_filter: "/braslety-na-niti", a_img: "/static/image/con5/img4.webp"},
+        {title: "Монетки", a_filter: "/category/Монеточка", a_img: "/static/image/con5/img3.webp"},
+        {title: "Бегунки", a_filter: "/category/Бегунок", a_img: "/static/image/con5/img1.webp"},
         {title: "Колье", a_filter: "/shop?filter=Колье", a_img: "/static/image/con5/img2.webp"}
         // {title: "Спортивных", a_filter: "/shop?filter=Спорт,Сила и успех,Минимализм и красота", a_img: "/static/image/productImgs/raketka/img2.webp"},
         // {title: "Пушистых", a_filter: "/shop?filter=Любовь к животным,Природа,Мир и свобода", a_img: "/static/image/productImgs/lapka/img1.webp"}

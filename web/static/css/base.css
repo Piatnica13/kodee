@@ -1,15 +1,18 @@
 @font-face { 
     font-family: "anastasiascripts"; 
+    font-display: swap;
     src: url('/static/fonts/anastasiascriptc.otf') format('opentype'); 
     font-weight: normal;
 }
 @font-face { 
     font-family: "FranksRus-Regular";
+    font-display: swap;
     src: url('/static/fonts/FranksRus-Regular_0.otf') format('opentype'); 
     font-weight: normal;
 }
 @font-face {
 	font-family: 'Caviar Dreams';
+    font-display: swap;
 	src: url('../fonts/caviar_dreams.eot'); /* IE 9 Compatibility Mode */
 	src: url('../fonts/caviar_dreams.eot?#iefix') format('embedded-opentype'), /* IE < 9 */
 		url('../fonts/caviar_dreams.woff2') format('woff2'), /* Super Modern Browsers */
@@ -19,13 +22,19 @@
 }
 @font-face {
 	font-family: 'Felidae-Regular';
-	src: url('../fonts/felidae-regular.eot'); /* IE 9 Compatibility Mode */
-	src: url('../fonts/felidae-regular.eot?#iefix') format('embedded-opentype'), /* IE < 9 */
-		url('../fonts/felidae-regular.woff2') format('woff2'), /* Super Modern Browsers */
-		url('../fonts/felidae-regular.woff') format('woff'), /* Firefox >= 3.6, any other modern browser */
-		url('../fonts/felidae-regular.ttf') format('truetype'), /* Safari, Android, iOS */
-		url('../fonts/felidae-regular.svg#felidae-regular') format('svg'); /* Chrome < 4, Legacy iOS */
+    font-display: swap;
+    src: url('../fonts/felidae-regular.woff2') format('woff2'),
+         url('../fonts/felidae-regular.ttf') format('truetype');
 }
+
+/* Light theme also works before scripts and with JavaScript disabled. */
+:root {
+    --main-bg: #fffaf5; --add-bg: #e5d7cc; --black: #3a3a3a; --white: #000;
+    --grey: #b8ada6; --border: #decabc; --shadow: #f2e0d5;
+    --gradient: linear-gradient(145deg, #f7eee7, #fffaf5, #f1e8dd);
+    --main-footer: #e5d7cc; --add-footer: #d2c2b5;
+}
+[data-aos]:not(.aos-init) { opacity: 1; transform: none; }
 
 body, html{
     margin: 0px;
@@ -104,6 +113,9 @@ input[type="text"]:focus{
     opacity: 0;
     align-items: center;
     transition: opacity 1s ease-in-out;
+}
+@media (prefers-reduced-motion: reduce) {
+    #Body, body { transition-duration: 0.01ms !important; }
 }
 .div100px{
     width: 100%; 

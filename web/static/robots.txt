@@ -1,2 +1,2 @@
 User-agent: *
-Sitemap: https://kodee.kz/sitemap.xml 
+Sitemap: https://kodee.kz/sitemap.xml

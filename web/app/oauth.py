@@ -25,7 +25,7 @@ def google_client():
     return current_app.extensions['google_oauth'].google
 
 
-def start_google_flow(link=False):
+def start_google_flow(link=False, return_to=''):
     if link and not canonical_origin_matches(current_app.config['APP_BASE_URL']):
         abort(400, description='Откройте профиль на основном адресе сайта перед привязкой Google')
     client = google_client()
@@ -36,7 +36,7 @@ def start_google_flow(link=False):
         if key.startswith('_state_google_'):
             session.pop(key)
     state = secrets.token_urlsafe(32)
-    session['google_flow'] = {'state': state, 'started_at': time.time(), 'link_user_id': user.id if user else None}
+    session['google_flow'] = {'state': state, 'started_at': time.time(), 'link_user_id': user.id if user else None, 'return_to': return_to}
     redirect_uri = current_app.config['APP_BASE_URL'] + '/callback'
     return client.authorize_redirect(redirect_uri, state=state)
 

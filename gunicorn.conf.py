@@ -8,6 +8,7 @@ workers = int(os.getenv('WEB_WORKERS', '2'))
 threads = 1
 timeout = 60
 accesslog = '-'
+access_log_format = '%(h)s %(t)s "%(m)s %(U)s %(H)s" %(s)s %(b)s'
 errorlog = '-'
 
 # The application alone applies forwarded headers after checking the peer CIDR.

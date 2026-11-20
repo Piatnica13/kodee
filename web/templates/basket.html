@@ -65,7 +65,7 @@
         </section>
         <section class="basketObertka3">
           <div class="basketNoCheckboxImg">
-            <h3 class="productName" style="margin: 0px">{{ product.name }}</h3>
+            <h3 class="productName" style="margin: 0px">{{ product_display_name(product) }}</h3>
             <div class="basketProductDescript">
               {%for desc in user.basket %} {%if product.id == desc[0] %}
               <div class="basketProductDescriptions">
@@ -88,9 +88,8 @@
           </div>
         </section>
       </article>
-      {% endfor %} {% else %}
-      <div style="font-size: 1.5rem"><h2>Товары пока не добавлены</h2></div>
-      {% endif %}
+      {% endfor %} {% endif %}
+      <div id="basketEmpty" {% if basket %}hidden{% endif %}><h2>Товары пока не добавлены</h2><a href="{{ url_for('web.shop') }}">Перейти в каталог</a></div>
     </div>
   </section>
   <section id="basketRight">
@@ -99,7 +98,7 @@
     </article>
     <article id="basketPay"></article>
     <article id="basketBhtWhatsAppDiv">
-      <button type="button" id="basketWhatsAppBth">
+      <button type="button" id="basketWhatsAppBth" disabled>
         <span>Оформить через WhatsApp</span>
       </button>
     </article>

@@ -5,6 +5,7 @@
 </title>
 {% endblock %} {% block style %}
 <link rel="stylesheet" href="/static/css/login.css" />
+<link rel="stylesheet" href="/static/css/google-auth.css" />
 {% endblock %} {% block body %}
 
 <!-- Обработчик сообщений -->
@@ -35,6 +36,7 @@
       autocomplete="on"
     >
       {{ form.hidden_tag() }}
+      {% if return_to %}<input type="hidden" name="next" value="{{ return_to }}" />{% endif %}
       <div id="UserInp">
         <article class="ImgInp">
           <img
@@ -84,20 +86,11 @@
       </div>
     </form>
     {% if config.GOOGLE_CLIENT_ID and config.GOOGLE_CLIENT_SECRET %}
-    <div id="loginGoogleDiv">
-      <a href="/login/google"
-        ><button id="loginGoogleBth">
-          <img
-            src="/static/icon/static/google.png"
-            alt="Вход через Google"
-            id="loginGoogleImg"
-          /></button
-      ></a>
-    </div>
+    {% include '_google_auth.html' %}
     {% endif %}
     <div>
       <p id="loginP">
-        Еще нет аккаунта? <a href="/register" id="LogIn">Регистрация</a>
+        Еще нет аккаунта? <a href="{{ url_for('web.register', next=return_to) if return_to else url_for('web.register') }}" id="LogIn">Регистрация</a>
       </p>
     </div>
   </div>

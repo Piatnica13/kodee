@@ -1,84 +1,53 @@
-{% extends "base.html" %} {% block title %}<title>
-  Каталог — KoDee Desire - БРАСЛЕТЫ ЖЕЛАНИЙ | ЗОЛОТО 585 ПРОБЫ | КОЛЬЕ НА ЛЕСКЕ
-  | КАРАГАНДА
-</title>
-
-<script type="application/ld+json">
-  {{ {
-      "@context": "https://schema.org",
-      "@type": "ItemList",
-      "itemListElement": products_json
-  }|tojson(indent=2) }}
-</script>
-
-{% endblock %} {% block style %}
-<link rel="stylesheet" href="/static/css/shop.css" />
-{% endblock %} {% block body %}
-<section id="Darker"></section>
-<section class="div100px"></section>
-<section id="BockMenu">
+{% extends "base.html" %}
+{% block title %}<title>Кулоны на нити, монетки и бегунки — KoDee Desire</title>{% endblock %}
+{% block style %}<link rel="stylesheet" href="/static/css/shop.css" />{% endblock %}
+{% block body %}
+<div class="div100px"></div>
+<section id="ShopBody"><div id="PodShopBody">
+  <header class="shop-hero">
+    <div class="shop-heading">
+      <h1>Кулоны на нити, монетки и бегунки</h1>
+      <p>Самолёт — о дорогах впереди. Монетка — об имени или дате, которые хочется сохранить. Бегунок — о красоте одной детали.</p>
+    </div>
+    <img src="/static/image/imgShop/BrasletsAndEgg.webp" class="shop-hero-image" alt="Браслеты KoDee" />
+  </header>
+  <nav class="shop-collections" aria-label="Коллекции KoDee Desire">
+    {% if grouped['Кулон'] %}<a href="{{ url_for('web.thread_bracelets') }}">Кулоны на нити</a>{% endif %}
+    {% if grouped['Монеточка'] %}<a href="{{ url_for('web.category', category='Монеточка') }}">Монетки с гравировкой</a>{% endif %}
+    {% if grouped['Бегунок'] %}<a href="{{ url_for('web.category', category='Бегунок') }}">Бегунки</a>{% endif %}
+  </nav>
+  <div id="TablMenu"><button id="Divfiltr" type="button" aria-expanded="false" aria-controls="BockMenu" hidden>Фильтр</button></div>
+  <p id="catalog-result" class="catalog-status" aria-live="polite"></p>
+  {% if grouped['Кулон'] %}
+  <section class="shop-collection" aria-labelledby="shop-pendants">
+    <div class="shop-collection-heading"><h2 id="shop-pendants">Кулоны на нити</h2><a href="{{ url_for('web.thread_bracelets') }}">Вся коллекция кулонов</a></div>
+    <div class="product-grid">{% for product in grouped['Кулон'] %}{% include '_product_card.html' %}{% endfor %}</div>
+  </section>
+  {% endif %}
+  {% if grouped['Монеточка'] %}
+  <section class="shop-collection" aria-labelledby="shop-coins">
+    <div class="shop-collection-heading"><h2 id="shop-coins">Монетки с гравировкой</h2><a href="{{ url_for('web.category', category='Монеточка') }}">Одна и две стороны</a></div>
+    <p>Имя, дата или рисунок остаются на маленькой монетке. Два варианта различаются числом сторон для гравировки.</p>
+    <p><a class="engraving-link" href="{{ url_for('web.individual_order') }}#examples">Примеры гравировки и индивидуальный заказ</a></p>
+    <div class="product-grid">{% for product in grouped['Монеточка'] %}{% include '_product_card.html' %}{% endfor %}</div>
+  </section>
+  {% endif %}
+  {% if grouped['Бегунок'] %}
+  <section class="shop-collection" aria-labelledby="shop-runners">
+    <div class="shop-collection-heading"><h2 id="shop-runners">Бегунки</h2><a href="{{ url_for('web.category', category='Бегунок') }}">Сравнить два варианта</a></div>
+    <p>Мини и стандартный — две версии лаконичного элемента на нити.</p>
+    <div class="product-grid">{% for product in grouped['Бегунок'] %}{% include '_product_card.html' %}{% endfor %}</div>
+  </section>
+  {% endif %}
+  <div id="shopDivBthMore" hidden><button id="shopBthMore" type="button" hidden>Ещё</button></div>
+</div></section>
+<div id="Darker"></div>
+<aside id="BockMenu" aria-label="Фильтры каталога" aria-hidden="true" inert>
   <div id="FilterHeight">
-    <div id="BockMenuTitle">
-      <h1>Фильтр</h1>
-      <div id="BockMenuDivImg">
-        <img
-          src="/static/icon/black/close.png"
-          alt="Выйти"
-          id="BockMenuTitleImg"
-          data-icon="close.png"
-        />
-      </div>
-    </div>
+    <div id="BockMenuTitle"><h2>Фильтры</h2><div id="BockMenuDivImg"><button id="BockMenuClose" type="button" aria-label="Закрыть фильтры">✕</button></div></div>
     <div id="BockMenuMain"></div>
-    <div id="BockMenuDivFuter">
-      <h2 style="font-size: 1.3rem">Выбраны все товары</h2>
-      <div id="BockMenuDivButtons">
-        <div id="BockMenuBthSbros"><span>Сбросить</span></div>
-        <div id="BockMenuDivBthShow">
-          <span>Показать</span>
-        </div>
-      </div>
-    </div>
+    <div id="BockMenuDivFuter"><p id="filter-count"></p><div id="BockMenuDivButtons"><button id="BockMenuBthSbros" type="button">Сбросить</button><button id="BockMenuDivBthShow" type="button">Показать</button></div></div>
   </div>
-</section>
-
-<section id="ShopBody">
-  <article id="PodShopBody">
-    <section class="Contener1">
-      <div class="Con1Text">
-        <h1 id="Con1GlText">Браслеты</h1>
-        <div class="Con1DivVtText">
-          <p id="Con1VtText">
-            <strong>Браслеты Kodee</strong> – это не только украшения. Это ваше
-            настроение, чувства и истории, которые вы будете рассказывать миру
-            именно&nbsp;сегодня. <br />
-            Наслаждайтесь вашей индивидуальностью.
-          </p>
-        </div>
-      </div>
-      <img
-        src="/static/image/imgShop/BrasletsAndEgg.webp"
-        class="imgs"
-        alt="Фото браслета Kodee"
-      />
-    </section>
-    <section id="TablMenu">
-      <div id="Divfiltr">
-        <img
-          src="/static/icon/black/control.png"
-          alt="Фильтры"
-          class="ShopImgControl"
-          data-icon="control.png"
-        />
-        <span>фильтры</span>
-      </div>
-    </section>
-    <section id="productGrid" name="ShopGrid"></section>
-    <section id="shopDivBthMore" data-aos="fade-up" data-aos-delay="0">
-      <button id="shopBthMore"><span>Еще</span></button>
-    </section>
-  </article>
-  {% endblock %} {% block script %}
-  <script src="/static/js/shop.js" defer></script>
-  {% endblock %}
-</section>
+</aside>
+{% endblock %}
+{% block script %}<script src="/static/js/shop.js"></script>{% endblock %}

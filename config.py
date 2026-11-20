@@ -23,4 +23,4 @@ class Config:
     MAX_CONTENT_LENGTH = 34 * 1024 * 1024
     MAX_FORM_MEMORY_SIZE = 512 * 1024
     OAUTH_FLOW_TTL = 600
-    DEBUG = True
+    DEBUG = False

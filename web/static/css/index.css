@@ -725,3 +725,14 @@ html, body{
         right: 50px;
     }
 }
+.home-intent-links {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 12px 20px;
+    padding: 20px;
+    text-align: center;
+}
+.home-intent-links p { flex-basis: 100%; margin: 0; }
+.home-intent-links a { color: var(--black); text-underline-offset: 4px; }

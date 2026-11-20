@@ -1,49 +1,180 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-
   <url>
-  <loc>https://kodee.kz/</loc>
-  <priority>1.0</priority>
-</url>
-
-<url>
-  <loc>https://kodee.kz//shop</loc>
-  <priority>0.9</priority>
-</url>
-
-<url>
-  <loc>https://kodee.kz//product</loc>
-  <priority>0.8</priority>
-</url>
-
-<url>
-  <loc>https://kodee.kz//individual</loc>
-  <priority>0.8</priority>
-</url>
-
-<url>
-  <loc>https://kodee.kz//help</loc>
-  <priority>0.7</priority>
-</url>
-
-<url>
-  <loc>https://kodee.kz//contact</loc>
-  <priority>0.6</priority>
-</url>
-
-<url>
-  <loc>https://kodee.kz//profil</loc>
-  <priority>0.5</priority>
-</url>
-
-<url>
-  <loc>https://kodee.kz//login</loc>
-  <priority>0.3</priority>
-</url>
-
-<url>
-  <loc>https://kodee.kz//register</loc>
-  <priority>0.3</priority>
-</url>
-
+    <loc>https://kodee.kz/</loc>
+  </url>
+  <url>
+    <loc>https://kodee.kz/shop</loc>
+  </url>
+  <url>
+    <loc>https://kodee.kz/braslety-na-niti</loc>
+  </url>
+  <url>
+    <loc>https://kodee.kz/contact</loc>
+  </url>
+  <url>
+    <loc>https://kodee.kz/individual</loc>
+  </url>
+  <url>
+    <loc>https://kodee.kz/help/primary</loc>
+  </url>
+  <url>
+    <loc>https://kodee.kz/category/%D0%91%D0%B5%D0%B3%D1%83%D0%BD%D0%BE%D0%BA</loc>
+  </url>
+  <url>
+    <loc>https://kodee.kz/category/%D0%9C%D0%BE%D0%BD%D0%B5%D1%82%D0%BE%D1%87%D0%BA%D0%B0</loc>
+  </url>
+  <url>
+    <loc>https://kodee.kz/product/angel</loc>
+  </url>
+  <url>
+    <loc>https://kodee.kz/product/begunok</loc>
+  </url>
+  <url>
+    <loc>https://kodee.kz/product/begunok-mini</loc>
+  </url>
+  <url>
+    <loc>https://kodee.kz/product/beskonechnost</loc>
+  </url>
+  <url>
+    <loc>https://kodee.kz/product/beskonechnost-love</loc>
+  </url>
+  <url>
+    <loc>https://kodee.kz/product/bliznetsy</loc>
+  </url>
+  <url>
+    <loc>https://kodee.kz/product/brilliant</loc>
+  </url>
+  <url>
+    <loc>https://kodee.kz/product/bumazhnyi-samolet</loc>
+  </url>
+  <url>
+    <loc>https://kodee.kz/product/derevo</loc>
+  </url>
+  <url>
+    <loc>https://kodee.kz/product/deva</loc>
+  </url>
+  <url>
+    <loc>https://kodee.kz/product/devochka</loc>
+  </url>
+  <url>
+    <loc>https://kodee.kz/product/dollar</loc>
+  </url>
+  <url>
+    <loc>https://kodee.kz/product/golub</loc>
+  </url>
+  <url>
+    <loc>https://kodee.kz/product/gory</loc>
+  </url>
+  <url>
+    <loc>https://kodee.kz/product/gravirovka-zolotoi-monetki-s-dvukh-storon-1-1g</loc>
+  </url>
+  <url>
+    <loc>https://kodee.kz/product/gravirovka-zolotoi-monetki-s-odnoi-storony-0-7g</loc>
+  </url>
+  <url>
+    <loc>https://kodee.kz/product/iakor</loc>
+  </url>
+  <url>
+    <loc>https://kodee.kz/product/klever</loc>
+  </url>
+  <url>
+    <loc>https://kodee.kz/product/korona</loc>
+  </url>
+  <url>
+    <loc>https://kodee.kz/product/kozerog</loc>
+  </url>
+  <url>
+    <loc>https://kodee.kz/product/krestik</loc>
+  </url>
+  <url>
+    <loc>https://kodee.kz/product/krylo</loc>
+  </url>
+  <url>
+    <loc>https://kodee.kz/product/lapka</loc>
+  </url>
+  <url>
+    <loc>https://kodee.kz/product/lev</loc>
+  </url>
+  <url>
+    <loc>https://kodee.kz/product/malchik</loc>
+  </url>
+  <url>
+    <loc>https://kodee.kz/product/olimpiiskie-koltsa</loc>
+  </url>
+  <url>
+    <loc>https://kodee.kz/product/oven</loc>
+  </url>
+  <url>
+    <loc>https://kodee.kz/product/patsifik</loc>
+  </url>
+  <url>
+    <loc>https://kodee.kz/product/planeta</loc>
+  </url>
+  <url>
+    <loc>https://kodee.kz/product/polumesiats</loc>
+  </url>
+  <url>
+    <loc>https://kodee.kz/product/puls</loc>
+  </url>
+  <url>
+    <loc>https://kodee.kz/product/pustyshka</loc>
+  </url>
+  <url>
+    <loc>https://kodee.kz/product/rak</loc>
+  </url>
+  <url>
+    <loc>https://kodee.kz/product/raketka</loc>
+  </url>
+  <url>
+    <loc>https://kodee.kz/product/roza-vetrov</loc>
+  </url>
+  <url>
+    <loc>https://kodee.kz/product/ruka-fatimy</loc>
+  </url>
+  <url>
+    <loc>https://kodee.kz/product/ryby</loc>
+  </url>
+  <url>
+    <loc>https://kodee.kz/product/samolet</loc>
+  </url>
+  <url>
+    <loc>https://kodee.kz/product/serdtse-kontur</loc>
+  </url>
+  <url>
+    <loc>https://kodee.kz/product/serdtse-na-pulse</loc>
+  </url>
+  <url>
+    <loc>https://kodee.kz/product/serdtse-puls</loc>
+  </url>
+  <url>
+    <loc>https://kodee.kz/product/shturval</loc>
+  </url>
+  <url>
+    <loc>https://kodee.kz/product/skorpion</loc>
+  </url>
+  <url>
+    <loc>https://kodee.kz/product/skripichnyi-kliuch</loc>
+  </url>
+  <url>
+    <loc>https://kodee.kz/product/snezhinka</loc>
+  </url>
+  <url>
+    <loc>https://kodee.kz/product/solntse</loc>
+  </url>
+  <url>
+    <loc>https://kodee.kz/product/strelets</loc>
+  </url>
+  <url>
+    <loc>https://kodee.kz/product/telets</loc>
+  </url>
+  <url>
+    <loc>https://kodee.kz/product/vesy</loc>
+  </url>
+  <url>
+    <loc>https://kodee.kz/product/vodolei</loc>
+  </url>
+  <url>
+    <loc>https://kodee.kz/product/zvezda-davida</loc>
+  </url>
 </urlset>

@@ -161,6 +161,7 @@ function deleteFunc(event){
         if (data.success){
             removeDiv = document.querySelector(`#card-${Id}`)
             removeDiv.remove();
+            document.querySelector('#basketEmpty').hidden = !!document.querySelector('.basketProduct');
 
             let update = readSelectedItems() || [];
             update = update.filter(item => item !== Id);
@@ -191,7 +192,8 @@ function rightProduct() {
         } catch (error) {}
         if (box.checked == true && product){
             let productShow = document.createElement("div");
-            productShow.innerHTML += `<p style = "font-size: 1.2rem">${num}. ${escapeHTML(product.name)} — ${escapeHTML(product.price)}&#8376;</p>`;
+            const displayName = document.querySelector(`#card-${productId} .productName`)?.textContent || product.name;
+            productShow.innerHTML += `<p style = "font-size: 1.2rem">${num}. ${escapeHTML(displayName)} — ${escapeHTML(product.price)}&#8376;</p>`;
             productShow.classList.add("basketRightProducts");
             productShow.id = `basketRightProductId${productId}`;
 
@@ -201,6 +203,7 @@ function rightProduct() {
         }
     });
     basketPay.innerHTML = `<h3 style = "font-size: 1.5rem">К оплате — ${sum}&#8376;</h3>`;
+    document.querySelector('#basketWhatsAppBth').disabled = num === 1;
 }
 
 let messageBth = document.querySelector("#basketWhatsAppBth");
@@ -221,7 +224,7 @@ function messageBthFunc() {
     const lines = [`Здравствуйте! Меня зовут ${customer}. Хочу оформить заказ.`];
     selected.forEach(({id, product}, index) => {
         const card = document.getElementById(`card-${id}`);
-        lines.push(`${index + 1}) ${product.name}`,
+        lines.push(`${index + 1}) ${card.querySelector('.productName').textContent.trim()}`,
             card.querySelector('.basketColor').innerText,
             card.querySelector('.basketSize').innerText,
             card.querySelector('.basketmaterial').innerText);

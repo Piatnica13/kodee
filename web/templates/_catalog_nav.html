@@ -1,0 +1,6 @@
+<nav class="catalog-nav" aria-label="Категории украшений">
+  {% if catalogue_categories is not defined or 'Кулон' in catalogue_categories %}<a href="{{ url_for('web.thread_bracelets') }}">Кулоны на нити</a>{% endif %}
+  {% if catalogue_categories is not defined or 'Монеточка' in catalogue_categories %}<a href="{{ url_for('web.category', category='Монеточка') }}">Монетки с гравировкой</a>{% endif %}
+  {% if catalogue_categories is not defined or 'Бегунок' in catalogue_categories %}<a href="{{ url_for('web.category', category='Бегунок') }}">Бегунки</a>{% endif %}
+  <a href="{{ url_for('web.shop') }}">Весь каталог</a>
+</nav>

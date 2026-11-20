@@ -94,3 +94,10 @@ backups/
 *.env.*
 .env*
 !.env.example
+.kodee_seo_task.txt
+artifacts/
+.price.txt
+.playwright-mcp/
+.SEO_GROWTH_PLAN.md
+.SEO_LOCAL_REPORT.md
+.SEO_PRODUCT_TABLE.csv

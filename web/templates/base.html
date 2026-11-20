@@ -239,7 +239,7 @@
         <img
           data-icon="logo.png"
           src="/static/icon/white/logo.png"
-          alt="KoDee Desire - ювелирные изделия из золота 585 и серебра 925"
+          alt="KoDee Desire"
           class="ConLastLogo"
           itemprop="url"
         />
@@ -303,12 +303,16 @@
     <div class="FuterBlocks FuterLineBord" id="FuterPodNavig">
       <div class="FuterMarginAuto">
         <div id="FooterDivImg">
-          <p class="LeftNa50px">Навигация</p>
+          <span class="footer-navigation-title">Навигация</span>
+          <button type="button" class="footer-navigation-toggle" aria-expanded="true" aria-controls="FuterPodListBlockNavig">
+            <span>Навигация</span>
           <img
             src="/static/icon/black/galochka.png"
             data-icon="galochka.png"
             id="Footerimg"
+            alt=""
           />
+          </button>
         </div>
         <nav class="FuterPodListBlocks LeftNa50px" id="FuterPodListBlockNavig">
           <a href="/">Главная страница</a>
@@ -316,6 +320,7 @@
           <a href="/profil">Профиль</a>
           <a href="/login">Вход</a>
           <a href="/contact">Контакты</a>
+          <a href="{{ url_for('web.privacy') }}">Конфиденциальность</a>
           <a href="/help/primary">О нас / Справка</a>
         </nav>
       </div>

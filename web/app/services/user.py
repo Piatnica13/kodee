@@ -6,7 +6,11 @@ from sqlalchemy.exc import IntegrityError
 from web.app.validation import text, email as valid_email
 from web.app.security import establish_session
 from web.app.log import log_action
+from datetime import datetime, timezone
+import hmac
 import os
+
+from web.app.privacy import CONSENT_VERSION, google_subject_marker, record_consent
 
 
 class UserService:
@@ -81,6 +85,8 @@ class UserService:
     @staticmethod
     def add_user():
         try:
+            if request.form.get('privacy_consent') != CONSENT_VERSION:
+                raise ValueError('Подтвердите согласие на обработку персональных данных.')
             name = text(request.form.get('name'), 'Имя', 25)
             email = valid_email(request.form.get('email'))
             password = request.form.get('password', '')
@@ -89,6 +95,7 @@ class UserService:
             if email == current_app.config.get('ADMIN_EMAIL', '').strip().lower() or User.query.filter(func.lower(User.email) == email).first():
                 raise ValueError('Аккаунт с данным Email уже зарегистрирован')
             user = User(name=name, email=email, password=generate_password_hash(password))
+            record_consent(user)
             db.session.add(user)
             db.session.commit()
             establish_session(user)
@@ -125,9 +132,13 @@ class UserService:
         from authlib.integrations.base_client.errors import OAuthError
         from requests.exceptions import RequestException
         try:
+            signup = session.get('google_flow', {}).get('signup_consent')
             claims, link_id = finish_google_flow()
             subject = claims['sub']
             google_email = valid_email(claims.get('email'))
+            marker = google_subject_marker(subject)
+            if signup and not hmac.compare_digest(signup['subject'], marker):
+                raise ValueError('Выберите тот же Google-аккаунт, для которого дали согласие.')
             linked = User.query.filter_by(google_sub=subject).first()
             if link_id is not None:
                 user = db.session.get(User, link_id)
@@ -142,10 +153,13 @@ class UserService:
                 reserved = current_app.config.get('ADMIN_EMAIL', '').strip().lower()
                 if google_email == reserved or User.query.filter(func.lower(User.email) == google_email).first():
                     raise ValueError('Этот Email уже используется. Войдите способом, выбранным при регистрации.')
+                if not signup or signup.get('version') != CONSENT_VERSION:
+                    return {'success': False, 'needs_consent': True, 'subject_marker': marker}
                 name = str(claims.get('name') or claims.get('given_name') or 'Google user').strip()[:25]
                 linked = User(name=name, email=google_email, password='')
                 linked.is_google = True
                 linked.google_sub = subject
+                record_consent(linked, datetime.fromtimestamp(signup['accepted_at'], timezone.utc))
                 db.session.add(linked)
                 db.session.commit()
                 log_action('registration', actor_id=linked.id, method='google')

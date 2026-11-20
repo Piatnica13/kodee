@@ -170,16 +170,41 @@ class SystemTests(unittest.TestCase):
         self.assertEqual(self.client.get('/admin/panel').status_code, 302)
 
     def test_registration_validation_and_reserved_admin(self):
+        from web.app.privacy import CONSENT_VERSION
+        no_consent = self.client.post('/register/add_user', data={
+            'name': 'Synthetic', 'email': 'synthetic@example.com', 'password': 'test-password',
+            'csrf_token': self.csrf(),
+        })
+        self.assertEqual(no_consent.status_code, 400)
+        self.assertIn('Подтвердите согласие', no_consent.text)
         for data in ({'name':'', 'email':'invalid','password':'short'},
                      {'name':'x'*26,'email':'other@example.com','password':'test-password'},
                      {'name':'Hacker','email':'ADMIN@example.com','password':'test-password'}):
-            self.client.post('/register/add_user', data={**data, 'csrf_token': self.csrf()})
+            self.client.post('/register/add_user', data={**data, 'privacy_consent': CONSENT_VERSION, 'csrf_token': self.csrf()})
         self.assertEqual(User.query.count(), 2)
         result = self.client.post('/register/add_user', data={'name':'New', 'email':'New@Example.com',
-            'password':'test-password','csrf_token':self.csrf()})
+            'password':'test-password','privacy_consent': CONSENT_VERSION,'csrf_token':self.csrf()})
         self.assertEqual(result.status_code, 302)
-        self.assertIsNotNone(User.query.filter_by(email='new@example.com').first())
+        user = User.query.filter_by(email='new@example.com').one()
+        self.assertEqual(user.privacy_consent_version, CONSENT_VERSION)
+        self.assertIsNotNone(user.privacy_consented_at)
         self.assertEqual(self.client.get('/profil').status_code, 200)
+
+    def test_registration_returns_to_product_and_rejects_external_redirect(self):
+        from web.app.privacy import CONSENT_VERSION
+        path = '/product/samolet'
+        page = self.client.get('/register', query_string={'next': path}).get_data(as_text=True)
+        self.assertIn('name="next" value="/product/samolet"', page)
+        error = self.client.post('/register/add_user', data={'name': 'Buyer', 'email': 'invalid',
+            'password': 'test-password', 'privacy_consent': CONSENT_VERSION, 'next': path, 'csrf_token': self.csrf()})
+        self.assertEqual(error.status_code, 400)
+        self.assertIn('Buyer', error.get_data(as_text=True))
+        result = self.client.post('/register/add_user', data={'name': 'Buyer', 'email': 'buyer@example.com',
+            'password': 'test-password', 'privacy_consent': CONSENT_VERSION, 'next': path, 'csrf_token': self.csrf()})
+        self.assertEqual(result.location, path)
+        other = self.client.post('/register/add_user', data={'name': 'Other', 'email': 'other@example.com',
+            'password': 'test-password', 'privacy_consent': CONSENT_VERSION, 'next': '//example.com', 'csrf_token': self.csrf()})
+        self.assertEqual(other.location, '/')
 
     def test_unique_email_constraint(self):
         db.session.add(User(name='Duplicate', email='TESTER@example.com'))

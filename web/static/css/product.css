@@ -17,7 +17,14 @@
     max-width: 400px;
     aspect-ratio: 1 / 1;
     transition: opacity 0.2s ease-in-out;
+    cursor: zoom-in;
 }
+.productFotos:focus-visible { outline: 2px solid var(--black); outline-offset: 3px; }
+#productZoom { border: 0; padding: 0; background: transparent; max-width: 95vw; max-height: 95vh; overflow: visible; }
+#productZoom::backdrop { background: rgba(0, 0, 0, .8); }
+#productZoomImage { display: block; max-width: 90vw; max-height: 90vh; object-fit: contain; }
+#productZoomClose { position: absolute; z-index: 1; top: 8px; right: 8px; width: 44px; height: 44px; background: #fffaf5; color: #303030; box-shadow: none; cursor: pointer; }
+#productZoomClose:focus-visible { outline: 2px solid #303030; outline-offset: 2px; }
 #product100Px{
     width: 100%;
     height: 100px;
@@ -34,6 +41,8 @@
     margin: 0px 0px;
     text-align: center;
 }
+.product-story { max-width: 520px; margin: 14px auto; line-height: 1.5; }
+.product-related a { color: var(--black); text-underline-offset: 4px; }
 #productMenuUp h1, h4{
     margin: 5px;
     text-align: center;
@@ -109,7 +118,16 @@
 #productBth{
     width: 100%;
     height: 80%;
+    font-size: 1rem;
+    font-weight: 700;
+    border: 0;
 }
+#productDivBth a#productBth { display: flex; align-items: center; justify-content: center;
+    color: var(--black); background: var(--gradient); border-radius: 999px;
+    text-align: center; text-decoration: none; padding: 0 12px; box-sizing: border-box; }
+#productBth:focus-visible { outline: 2px solid var(--black); outline-offset: 4px; }
+.product-material-notice { background: var(--border); color: var(--black); border-radius: 8px; padding: 12px 16px; margin: -10px 0 20px; }
+.product-material-notice[hidden] { display: none; }
 #productDescriptions{
     margin: 25px 0px 0px 0px;
 }
@@ -169,23 +187,23 @@
     height: 100%;
     align-items: center;
     display: none;
+    pointer-events: none;
 }
-#profilGalochka1{
-    opacity: 0.5;
-    transform: rotate(90deg) scaleX(-1);
-    position: absolute;
-    z-index: 10;
-    left: 2.5%;
-    top: 40%;
+#profilGalochka1, #profilGalochka2 {
+    position: absolute; z-index: 10; top: 50%; transform: translateY(-50%);
+    width: 44px; height: 44px; padding: 0; border: 0; border-radius: 50%;
+    background: transparent; box-shadow: none; color: #303030;
+    display: grid; place-items: center; pointer-events: auto; cursor: pointer;
 }
-#profilGalochka2{
-    opacity: 0.5;
-    transform: rotate(270deg) scaleX(-1);
-    position: absolute;
-    z-index: 10;
-    right: 2.5%;
-    top: 40%;
-}
+#profilGalochka1 { left: 2.5%; }
+#profilGalochka2 { right: 2.5%; }
+#profilGalochka1 span, #profilGalochka2 span { width: 28px; height: 28px; border-radius: 50%; background: rgba(255, 250, 245, .88); display: grid; place-items: center; }
+#profilGalochka1 span::after, #profilGalochka2 span::after { content: ''; width: 8px; height: 8px; border-top: 2px solid currentColor; border-right: 2px solid currentColor; transform: rotate(225deg); }
+#profilGalochka2 span::after { transform: rotate(45deg); }
+#profilGalochka1:hover, #profilGalochka2:hover { scale: 1; background: transparent; box-shadow: none; }
+#profilGalochka1:hover span, #profilGalochka2:hover span { background: #fffaf5; }
+#profilGalochka1:active, #profilGalochka2:active { transform: translateY(-50%); }
+#profilGalochka1:focus-visible, #profilGalochka2:focus-visible { outline: 2px solid #303030; outline-offset: 2px; }
 .shake{
     display: inline-block;
     animation: shake 0.5s ease-in-out;
@@ -240,7 +258,7 @@
         align-items: start;
         width: 100%;
         height: auto;
-        aspect-ratio: auto auto;
+        aspect-ratio: 1 / 1;
     }
     .productFotos{
         width: 100%;
@@ -266,7 +284,10 @@
 @media screen and (max-width: 700px) {
     #productAllCharacter{
         justify-content: space-between;
-        gap: 20px;
+        gap: 0;
+    }
+    #productAllCharacter h3, p{
+        margin: 20px 5px;
     }
     #productHowSize{
         font-size: 14px;
@@ -291,6 +312,10 @@
         display: grid;
         grid-template-columns: 50% 50%;
         grid-template-rows: 50% 50%;
+        overflow: auto;
+    }
+    #productAllCharacter h3, p{
+        margin: 5px;
     }
     .DivsCharacters{
         display: flex;
@@ -306,3 +331,7 @@
     80% { transform: translateX(5px); }
     100% { transform: translateX(0); }
 }
+.product-contact a { color: var(--black); text-underline-offset: 4px; }
+.product-contact a:hover { text-decoration-thickness: 2px; }
+.product-breadcrumbs { padding: 0 25px; margin: 0 0 24px; line-height: 1.6; overflow-wrap: break-word; }
+.product-contact a:focus-visible { outline: 2px solid var(--black); outline-offset: 4px; }

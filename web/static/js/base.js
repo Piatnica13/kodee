@@ -29,7 +29,7 @@ document.addEventListener("DOMContentLoaded", () => {
 // То что делается сразу при загрузке страницы
 function Loader() {
 
-    AOS.refreshHard();
+    window.AOS?.refreshHard();
 
     // Добавляем события только один раз
     if (!window.__eventsAdded) {
@@ -39,7 +39,6 @@ function Loader() {
         lightMod.addEventListener("click", SwitchDark);
         darkMod.addEventListener("click", SwitchLight);
         window.addEventListener('resize', get_resize);
-        document.addEventListener("click", laterLocation);
 
         window.__eventsAdded = true;
     }
@@ -62,24 +61,7 @@ function Loader() {
     lightMod.style.transition = "opacity 0.4s ease";
     darkMod.style.transition = "opacity 0.4s ease";
 
-    AOS.init();
-}
-
-// При переходе на страницу, переход происходит не сразу
-function laterLocation(e){
-    let link = e.target.closest("a");
-    if(link && link.href && link.target !== "_blank" && link.href.indexOf("javascript:") !== 0){
-        e.preventDefault();
-        inShowPage();
-        if (checkboxMain.checked == true){
-        checkboxMain.checked = false;
-        checkboxmainn()
-        handleScroll()
-        }
-        setTimeout(() => {
-            window.location.href = link.href;
-        }, 500);
-    }
+    window.AOS?.init();
 }
 
 // Все функции проверяющие размер экрана
@@ -129,6 +111,12 @@ function handleScroll(){
     
 // Показываем меню боди
 function showMainContainer(menu) {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        menu.classList.remove("hidden");
+        menu.classList.add("visible");
+        MainContener.style.opacity = "1";
+        return;
+    }
     setTimeout(() => {
         menu.classList.remove("hidden");
         menu.classList.add("visible");
@@ -142,11 +130,16 @@ function showMainContainer(menu) {
 
 // Скрыть меню, основной контейнер и футер
 function inShowPage(){
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     let menu = document.querySelector("#MenuFixed");
-    document.body.style.transition = `opacity 0.3s ease-in-out`;
-    document.body.style.opacity = "0";
+    fadePage();
     menu.classList.remove("visible");
     menu.classList.add("hidden");
+    if (checkBox.checked) {
+        checkBox.checked = false;
+        checkboxmainn();
+        handleScroll();
+    }
 }
 
 // Меняются иконки чб и белые

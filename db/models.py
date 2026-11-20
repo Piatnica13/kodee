@@ -40,6 +40,8 @@ class User(db.Model):
     material = db.Column(db.String, default="gold")
     is_google = db.Column(db.Boolean(), default=False)
     google_sub = db.Column(db.String(255), nullable=True)
+    privacy_consent_version = db.Column(db.String(32), nullable=True)
+    privacy_consented_at = db.Column(db.DateTime(timezone=True), nullable=True)
 
 
     def __init__(self, telegram_id=None, name='', last_name='', user_name='', first_name='', password='', phone='', email='', address='', material="gold", role="seller"):

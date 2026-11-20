@@ -1,0 +1,6 @@
+<label class="privacy-consent">
+  <input type="checkbox" name="privacy_consent" value="{{ privacy_consent_version }}" {% if consent_checked %}checked{% endif %} required />
+  <span>Согласен на обработку персональных данных для создания аккаунта.
+    <a target="_blank" rel="noopener noreferrer" href="{{ url_for('web.privacy', _anchor='account-consent') }}">Полный текст согласия</a>.
+  </span>
+</label>

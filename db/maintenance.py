@@ -41,11 +41,17 @@ def upgrade_schema():
         if duplicates or invalid:
             raise click.ClickException(f'Проверьте изображения: дубликаты {duplicates}, неверные номера {invalid}')
     db.session.rollback()
-    if 'users' in tables and 'google_sub' not in {column['name'] for column in inspect(db.engine).get_columns('users')}:
-        with db.engine.begin() as connection:
-            connection.execute(text('ALTER TABLE users ADD COLUMN google_sub VARCHAR(255)'))
-    db.create_all()
     with db.engine.begin() as connection:
+        if 'users' in tables:
+            columns = {column['name'] for column in inspect(connection).get_columns('users')}
+            if 'google_sub' not in columns:
+                connection.execute(text('ALTER TABLE users ADD COLUMN google_sub VARCHAR(255)'))
+            if 'privacy_consent_version' not in columns:
+                connection.execute(text('ALTER TABLE users ADD COLUMN privacy_consent_version VARCHAR(32)'))
+            if 'privacy_consented_at' not in columns:
+                timestamp_type = 'TIMESTAMP WITH TIME ZONE' if connection.dialect.name == 'postgresql' else 'DATETIME'
+                connection.execute(text(f'ALTER TABLE users ADD COLUMN privacy_consented_at {timestamp_type}'))
+        db.metadata.create_all(bind=connection)
         connection.execute(text("UPDATE users SET email = NULLIF(lower(trim(email)), '')"))
         connection.execute(text("CREATE UNIQUE INDEX IF NOT EXISTS uq_users_email_normalized ON users (lower(NULLIF(trim(email), '')))"))
         connection.execute(text('CREATE UNIQUE INDEX IF NOT EXISTS uq_users_telegram_id ON users (telegram_id)'))

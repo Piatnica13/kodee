@@ -127,6 +127,8 @@
 #FooterDivImg{
     display: block;
 }
+.footer-navigation-title { display: flex; justify-content: center; color: var(--white); font-size: 1.5rem; text-align: center; margin: 20px 0;}
+.footer-navigation-toggle { display: none; }
 @media screen and (max-width: 1200px) {
     .FuterCon1DivImg{
         width: 100%;
@@ -220,6 +222,9 @@
     .LeftNa50px{
         text-align: start;
     }
+    .navigation{
+        font-size: 1.3rem !important;
+    }
     .FuterMarginAuto{
         margin: 15px 0 15px 15px;
         gap: 0;
@@ -252,4 +257,25 @@
         top: 15%;
         gap: 0;
     }
+}
+@media screen and (max-width: 767px) {
+    .ContenerLast { position: relative; padding: 20px 20px; box-sizing: border-box; }
+    #FuterConLast1 { gap: 12px; }
+    .FuterBlockLogoMeseg { flex-direction: row; align-items: center; justify-content: space-between; gap: 10px; }
+    .FuterCon1DivImg { width: auto; padding: 12px 16px; border-radius: 8px; }
+    .ConLastLogo { width: 120px; }
+    .MesegIcons { position: static; gap: 4px; background: none; }
+    .FuterCon1DivsIcon { width: 38px; height: 38px; }
+    .FuterMarginAuto { margin: 0; gap: 4px; }
+    .FuterBlocks p { font-size: 1rem; margin: 0 0 4px; }
+    #Footerimg { display: none; }
+    .FuterPodListBlocks { display: flex; height: auto; overflow: visible; gap: 0 16px; font-size: 1rem; }
+    .FuterPodListBlocks a { display: flex; min-height: 36px; align-items: center; text-align: left; }
+    .footer-navigation-title { display: none; }
+    .footer-navigation-toggle { display: flex; align-items: center; justify-content: space-between; width: 100%; min-height: 44px; height: auto; padding: 0; border: 0; background: none; color: var(--white); box-shadow: none; border-radius: 0; font: inherit; font-size: 1.3rem; cursor: pointer; }
+    .footer-navigation-toggle:hover { scale: 1; }
+    .footer-navigation-toggle:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
+    .footer-navigation-toggle #Footerimg { display: block; width: 22px; height: 22px; margin: 0 4px; }
+    .footer-navigation-toggle[aria-expanded="true"] #Footerimg { transform: rotate(180deg); }
+    #FuterPodListBlockNavig[hidden] { display: none; }
 }

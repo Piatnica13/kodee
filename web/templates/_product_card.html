@@ -1,0 +1,15 @@
+<article class="product-card" data-category="{{ product.category }}" data-concept="{{ product.concept }}" data-price="{{ product.price or 0 }}">
+  <a class="product-link" href="{{ url_for('web.product', slug=product.slug) }}">
+    <img src="{{ product.image() }}" alt="{{ product_photo_alt(product, 1) if product.images else 'Пример украшения KoDee Desire' }}" class="product-image" width="600" height="600" loading="lazy" decoding="async">
+    <h2 class="product-title">{{ product_display_name(product) }}</h2>
+    {% if engraving_summary(product) %}<p>{{ engraving_summary(product) }}</p>{% endif %}
+    {% if product.category != 'Монеточка' and product.weight %}<p class="product-weight">Вес: {{ (product.weight|string).replace('.', ',') }} г</p>{% endif %}
+    <div class="test">
+      <p class="product-price">{% if product.price %}{{ format_price(product.price) }} ₸{% else %}Цену уточняйте{% endif %}</p>
+      <div class="DivInfo">
+        <img src="/static/icon/black/sumka.png" data-icon="sumka.png" class="Con2Icon" alt="" width="25" height="25">
+        <p class="BthInfo"><ins>Подробнее</ins></p>
+      </div>
+    </div>
+  </a>
+</article>

@@ -1,0 +1,21 @@
+.google-auth-row {
+    width: 100%;
+}
+#loginForm + .google-auth-row {
+    height: 10%;
+}
+.google-auth {
+    display: inline-block;
+    padding: 2px 6px;
+    border: 2px outset ButtonBorder;
+    border-radius: 5px;
+    background-color: var(--add-bg);
+    line-height: normal;
+}
+.google-auth img {
+    width: 32px;
+    height: 32px;
+    padding: 3px 0 2.2px;
+    vertical-align: top;
+}
+.google-auth:focus-visible { outline: 2px solid var(--white); outline-offset: 3px; }

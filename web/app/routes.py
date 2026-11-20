@@ -1,4 +1,5 @@
-from flask import Blueprint, current_app,  render_template, request, redirect, session, flash, jsonify, send_from_directory, current_app, url_for
+from flask import Blueprint, current_app, render_template, request, redirect, session, flash, jsonify, send_from_directory, url_for, Response, abort
+from xml.etree import ElementTree as ET
 from functools import wraps
 from db.models import db, Product
 from web.app.forms import LoginForm, RegisterForm, ProfilMainPassForm, ProfilSplitForm, ProfilAddSplit, ProfilAddressForm
@@ -10,6 +11,10 @@ from web.app.log import log_action
 from werkzeug.exceptions import HTTPException
 from sqlalchemy.exc import IntegrityError
 import os
+import re
+import time
+
+from web.app.privacy import CONSENT_VERSION
 
 web_api = Blueprint("web", __name__)
 
@@ -243,11 +248,72 @@ def search():
     return jsonify(result)
 
 
+# Названия в БД и URL остаются неизменными. Незнакомые категории
+# показываем как есть, не пытаясь автоматически склонять их.
+CATEGORY_LABELS = {'Кулон': 'Кулоны', 'Бегунок': 'Бегунки',
+                   'Монеточка': 'Монеточки', 'Колье': 'Колье'}
+CATEGORY_CONTENT = {
+    'Монеточка': {
+        'heading': 'Монетки для гравировки',
+        'title': 'Монетки с гравировкой — одна и две стороны | KoDee Desire',
+        'description': 'Монетки KoDee Desire для личной гравировки: имя, дата или рисунок. Сравните варианты с одной и двумя сторонами, фотографии, вес и цены.',
+        'intro': 'Имя, дата, несколько слов или рисунок — то, что хочется оставить рядом. Здесь два варианта монеток: гравировка с одной или двух сторон.',
+    },
+    'Бегунок': {
+        'heading': 'Бегунки на нити',
+        'title': 'Бегунки на нити — мини и стандартный | KoDee Desire',
+        'description': 'Бегунки KoDee Desire на нити: мини и стандартный. Две модели с фотографиями, весом и ценой.',
+        'intro': 'Бегунок мини и бегунок — два размера одной лаконичной детали. На фотографиях оба показаны на нити.',
+    },
+}
+
+
+@web_api.app_context_processor
+def category_labels():
+    from web.app.seo import (engraving_summary, product_title, product_meta_description,
+                             product_display_name, product_description, product_photo_alt,
+                             product_gallery_images, format_price)
+    return {'category_label': lambda value: CATEGORY_LABELS.get(value, value),
+            'engraving_summary': engraving_summary, 'product_display_name': product_display_name,
+            'product_description': product_description, 'product_photo_alt': product_photo_alt,
+            'product_gallery_images': product_gallery_images,
+            'product_title': product_title, 'product_meta_description': product_meta_description,
+            'format_price': format_price}
+
+
 # МАГАЗИН
 @web_api.route('/shop')
 def shop():
-    result = ProductService.get_products_for_properties()
-    return render_template("shop.html", products_json=result)
+    products = Product.query.filter_by(active=True).order_by(Product.id).all()
+    grouped = {category: [p for p in products if p.category == category]
+               for category in ('Кулон', 'Монеточка', 'Бегунок')}
+    return render_template("shop.html", products=products, grouped=grouped)
+
+
+@web_api.route('/category/<category>')
+def category(category):
+    if category == 'Кулон':
+        return redirect(url_for('web.thread_bracelets'), code=301)
+    products = Product.query.filter_by(active=True, category=category).order_by(Product.id).all()
+    if not products:
+        abort(404)
+    return render_template('category.html', category=category, products=products,
+                           category_content=CATEGORY_CONTENT.get(category, {}),
+                           catalogue_categories={row[0] for row in db.session.query(Product.category).filter_by(active=True).distinct()})
+
+
+@web_api.route('/braslety-na-niti')
+def thread_bracelets():
+    products = Product.query.filter_by(active=True, category='Кулон').order_by(Product.id).all()
+    featured = {p.slug: p for p in products if p.slug in {'samolet', 'klever', 'derevo', 'korona'}}
+    return render_template('category.html', category='Кулон', products=products, featured=featured,
+        catalogue_categories={row[0] for row in db.session.query(Product.category).filter_by(active=True).distinct()},
+        category_content={
+            'heading': 'Кулоны желаний на нити',
+            'title': 'Кулоны желаний на нити — коллекция KoDee Desire',
+            'description': 'Кулоны желаний KoDee Desire на нити: Самолёт, Клевер, Солнце и другие символы. Фотографии моделей, вес и цены. Мастерская в Караганде.',
+            'intro': 'У каждого желания свой знак. Нить оставляет символ рядом каждый день.',
+        })
 
 
 # КОНТАКТЫ
@@ -268,15 +334,27 @@ def help(theme):
 @web_api.route('/individual')
 def individual_order():
     current_app.logger.debug("Открыта страница индивидуального заказа.")
-    return render_template('individual.html')
+    from db.engraving_examples import ENGRAVING_EXAMPLES
+    coins = Product.query.filter_by(active=True, category='Монеточка').order_by(Product.id).all()
+    return render_template('individual.html', coins=coins, engraving_examples=ENGRAVING_EXAMPLES)
 
 
 # РЕГИСТРАЦИЯ
+@web_api.app_context_processor
+def privacy_context():
+    return {'privacy_consent_version': CONSENT_VERSION}
+
+
+@web_api.route('/privacy')
+def privacy():
+    return render_template('privacy.html')
+
+
 @web_api.route('/register')
 def register():
     form = RegisterForm()
     current_app.logger.debug("Открыта страница регистрации.")
-    return render_template('register.html', form=form)
+    return render_template('register.html', form=form, return_to=product_return_path(request.args.get('next', '')))
 
 @web_api.route("/register/add_user", methods=['POST'])
 def reg_user():
@@ -284,19 +362,29 @@ def reg_user():
     log_action('registration', outcome='success' if result['success'] else 'failure')
 
     if result["success"] == False:
-        flash(result["message"])
-        return redirect("/register")
+        return_to = product_return_path(request.form.get('next'))
+        return render_template('register.html', form=RegisterForm(), return_to=return_to,
+                               registration_error=result['message'],
+                               consent_checked=request.form.get('privacy_consent') == CONSENT_VERSION,
+                               entered_name=request.form.get('name', ''),
+                               entered_email=request.form.get('email', '')), 400
 
     flash(result["message"])
-    return redirect("/")
+    return redirect(product_return_path(request.form.get('next')) or '/')
 
 
 # ВХОД В АККАУНТ
+def product_return_path(value):
+    """Allow return only to a local catalogue product, never an arbitrary URL."""
+    return value if isinstance(value, str) and re.fullmatch(r'/product/[a-z0-9-]+', value) else ''
+
+
 @web_api.route('/login')
 def login():
     form = LoginForm()
     current_app.logger.debug("Открыта страница входа.")
-    return render_template('login.html', form=form)
+    return_to = product_return_path(request.args.get('next', ''))
+    return render_template('login.html', form=form, return_to=return_to)
 
 @web_api.route('/login/log_user', methods=['POST'])
 def log_user():
@@ -306,13 +394,17 @@ def log_user():
     log_action('login', outcome='success' if result['success'] else 'failure', method='password')
     if result['success'] == False:
         flash(result["message"])
-        return redirect('/login')
+        return_to = product_return_path(request.form.get('next'))
+        return redirect(url_for('web.login', next=return_to)) if return_to else redirect('/login')
 
     if result['admin']:
         flash(result["message"])
         return redirect('/admin')
 
     flash(result["message"])
+    return_to = product_return_path(request.form.get('next'))
+    if return_to:
+        return redirect(return_to)
     return redirect('/')
 
 
@@ -320,14 +412,16 @@ def log_user():
 @web_api.route('/login/google')
 def google_login():
     from web.app.oauth import start_google_flow
+    session.pop('google_signup_pending', None)
+    return_to = product_return_path(request.args.get('next', ''))
     try:
-        return start_google_flow()
+        return start_google_flow(return_to=return_to)
     except HTTPException:
         raise
     except Exception:
         current_app.logger.exception('Не удалось начать Google OAuth')
         flash('Вход через Google временно недоступен')
-        return redirect('/login')
+        return redirect(url_for('web.login', next=return_to or None))
 
 
 @web_api.route('/profil/google/link', methods=['POST'])
@@ -348,15 +442,55 @@ def link_google(user):
 @web_api.route('/callback')
 def authorize():
     linking = bool(session.get('google_flow', {}).get('link_user_id'))
+    return_to = product_return_path(session.get('google_flow', {}).get('return_to'))
     result = UserService.log_user_from_google()
+    if result.get('needs_consent'):
+        session['google_signup_pending'] = {
+            'subject': result['subject_marker'], 'return_to': return_to,
+            'expires_at': time.time() + current_app.config['OAUTH_FLOW_TTL'],
+        }
+        return redirect(url_for('web.google_signup_consent'))
     log_action('google.link' if linking else 'login', outcome='success' if result['success'] else 'failure', method='google')
 
     if result['success'] == False:
         flash(result['message'])
-        return redirect('/login')
+        return redirect(url_for('web.login', next=return_to)) if return_to else redirect('/login')
 
     flash(result['message'])
-    return redirect('/profil' if linking else '/')
+    return redirect('/profil' if linking else (return_to or '/'))
+
+
+@web_api.route('/register/google/consent', methods=['GET', 'POST'])
+def google_signup_consent():
+    from web.app.oauth import start_google_flow
+
+    pending = session.get('google_signup_pending')
+    return_to = product_return_path(pending.get('return_to')) if pending else ''
+    if current_user():
+        session.pop('google_signup_pending', None)
+        return redirect(return_to or '/')
+    declined = request.method == 'POST' and request.form.get('decision') == 'decline'
+    if not pending or pending['expires_at'] <= time.time() or declined:
+        session.pop('google_signup_pending', None)
+        return redirect(url_for('web.login', next=return_to or None))
+    if request.method == 'GET':
+        return render_template('google_signup_consent.html')
+    if request.form.get('privacy_consent') != CONSENT_VERSION:
+        return render_template('google_signup_consent.html',
+                               registration_error='Подтвердите согласие на обработку персональных данных.'), 400
+    session.pop('google_signup_pending', None)
+    accepted_at = time.time()
+    try:
+        response = start_google_flow(return_to=pending['return_to'])
+        session['google_flow'] = {**session['google_flow'], 'signup_consent': {
+            'subject': pending['subject'], 'version': CONSENT_VERSION, 'accepted_at': accepted_at,
+        }}
+        return response
+    except Exception:
+        session.pop('google_flow', None)
+        current_app.logger.warning('Не удалось продолжить регистрацию через Google')
+        flash('Вход через Google временно недоступен')
+        return redirect(url_for('web.login', next=pending['return_to']))
 
 
 # ВЫХОД ИЗ АККАУНТА
@@ -392,8 +526,11 @@ def add_imgs():
 @web_api.route('/product/<slug>')
 def product(slug):
     result = ProductService.check_user_for_product_page(slug)
-
-    return render_template('product.html', product=result['product'], user=result['user'], address=result['address'], favarite=result['favorite'])
+    from web.app.seo import product_schema
+    from db.product_editorial import RELATED_SLUGS
+    related_slug = RELATED_SLUGS.get(slug)
+    related = Product.query.filter_by(slug=related_slug, active=True).one_or_none() if related_slug else None
+    return render_template('product.html', product=result['product'], user=result['user'], address=result['address'], favarite=result['favorite'], product_schema=product_schema(result['product']), related=related)
 
 
 # ВЫВОД ПРОДУКТОВ
@@ -406,6 +543,10 @@ def get_product():
 # ВСЕ СЕРВЕРНЫЕ МОМЕНТЫ
 @web_api.after_app_request
 def apply_security_headers(response):
+    if request.endpoint in {'web.authorize', 'web.google_signup_consent'}:
+        response.headers['Cache-Control'] = 'no-store'
+    if request.endpoint == 'web.privacy' or request.path.startswith(('/login', '/register', '/profil', '/basket', '/admin', '/callback', '/logout')) or (request.endpoint == 'web.help' and request.view_args.get('theme') != 'primary'):
+        response.headers['X-Robots-Tag'] = 'noindex, nofollow'
     response.headers['X-Content-Type-Options'] = 'nosniff'
     if request.is_secure:
         response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
@@ -423,7 +564,22 @@ def robots():
 
 @web_api.route('/sitemap.xml')
 def sitemap():
-    return send_from_directory(current_app.static_folder, 'sitemap.xml') # type: ignore
+    namespace = 'http://www.sitemaps.org/schemas/sitemap/0.9'
+    ET.register_namespace('', namespace)
+    root = ET.Element(f'{{{namespace}}}urlset')
+    paths = [url_for('web.index'), url_for('web.shop'), url_for('web.thread_bracelets'), url_for('web.contact'),
+             url_for('web.individual_order'), url_for('web.help', theme='primary')]
+    products = Product.query.filter_by(active=True).order_by(Product.slug).all()
+    categories = sorted({p.category for p in products
+                         if p.category and p.category != 'Кулон' and '/' not in p.category})
+    paths.extend(url_for('web.category', category=value) for value in categories)
+    paths.extend(url_for('web.product', slug=p.slug) for p in products if p.slug and '/' not in p.slug)
+    for path in dict.fromkeys(paths):
+        entry = ET.SubElement(root, f'{{{namespace}}}url')
+        ET.SubElement(entry, f'{{{namespace}}}loc').text = 'https://kodee.kz' + path
+    ET.indent(root)
+    return Response(ET.tostring(root, encoding='utf-8', xml_declaration=True) + b'\n',
+                    mimetype='application/xml')
 
 # ОБРАБОТКА ОШИБОК
 # @web_api.app_errorhandler(Exception)

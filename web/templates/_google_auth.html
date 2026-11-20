@@ -1,0 +1,5 @@
+<div class="google-auth-row">
+  <a class="google-auth" data-instant-navigation href="{{ url_for('web.google_login', next=return_to) if return_to else url_for('web.google_login') }}">
+    <img src="/static/icon/static/google.png" alt="Продолжить с Google" />
+  </a>
+</div>

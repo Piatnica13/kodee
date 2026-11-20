@@ -1,7 +1,7 @@
 const indiv1s = document.querySelectorAll(".indiv1Divs");
 const indiv1imgs = document.querySelectorAll(".indiv1imgs");
 const indiv1sec = document.querySelectorAll(".indivSec");
-const indiv1text = document.querySelectorAll(".indiv1text");
+const indivFirst = document.querySelectorAll(".indivFirst");
 
 const indiv1img = document.querySelector("#indiv1img");
 const indiv2img = document.querySelector("#indiv2img");
@@ -12,14 +12,18 @@ const indiv2div = document.querySelector("#indiv2Div");
 const indiv3div = document.querySelector("#indiv3Div");
 
 window.addEventListener("DOMContentLoaded", () => {
-    setTimeout(() => {
-        indiv1s.forEach((div, index) => {
+    const animated = [...indiv1s];
+    if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        animated.forEach(div => { div.style.opacity = '0'; div.style.transform = 'translateX(-30px)'; });
+        setTimeout(() => {
+        animated.forEach((div, index) => {
             setTimeout(() => {
                 div.style.opacity = `1`;
                 div.style.transform = `translateX(0px)`;
             }, 500 * index);
         });
-    }, 850);
+        }, 850);
+    } else { animated.forEach(div => { div.style.opacity = '1'; div.style.transform = 'none'; }); }
 
     Width(); 
 });
@@ -32,7 +36,7 @@ function Width(){
         indiv1sec.forEach((el) => {
             el.style.display = `flex`;
         })
-        indiv1text.forEach((el) => {
+        indivFirst.forEach((el) => {
             el.style.display = `none`;
         })
         indiv1img.style.top = `15px`;
@@ -48,7 +52,7 @@ function Width(){
         indiv1sec.forEach((el) => {
             el.style.display = `none`;
         })
-        indiv1text.forEach((el) => {
+        indivFirst.forEach((el) => {
             el.style.display = `flex`;
         })
         indiv1img.style.top = `0px`;

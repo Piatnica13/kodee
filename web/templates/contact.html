@@ -1,32 +1,15 @@
-{% extends "base.html" %} {% block title %}
-<title>Контакты — KoDee Desire - БРАСЛЕТЫ ЖЕЛАНИЙ | ЗОЛОТО
-      585 ПРОБЫ | КОЛЬЕ НА ЛЕСКЕ | КАРАГАНДА</title>
-{% endblock %} {% block style %}
-<link rel="stylesheet" href="/static/css/contact.css">
-{% endblock %} {% block body %}
-<article class="div100px"></article>
-<article id="Text">
-    <address>
-      <p class="InDivText">KoDee Desire <br />Jewellery</p>
-      <p class="InDivText">Караганда, Казахстан</p>
-    </address>
-    <a href="https://wa.me/77003360024"
-    target="_blank"
-    rel="noopener noreferrer"
-    style="text-decoration: none">
-      <p class="InDivText" id="contactNum">+7 (700) 336-00-24</p>
-    </a>
-    <a
-      href="https://www.instagram.com/kodee_jewellery/"
-      target="_blank"
-      rel="noopener noreferrer"
-      style="text-decoration: none"
-    >
-      <p class="InDivText" id="Instagram">Instagram</p>
-    </a>
+{% extends "base.html" %}
+{% block title %}<title>Контакты — KoDee Desire | Караганда</title>{% endblock %}
+{% block style %}<link rel="stylesheet" href="/static/css/contact.css">{% endblock %}
+{% block body %}
+<div class="div100px"></div>
+<section class="contact-page">
+  <p class="contact-kicker">KoDee Desire · Jewellery</p>
+  <h1>Контакты</h1>
+  <p class="contact-location">Караганда, Казахстан</p>
+  <div class="contact-links">
+    <a href="https://wa.me/77003360024" target="_blank" rel="noopener noreferrer"><span>WhatsApp</span><strong>+7 (700) 336-00-24</strong></a>
+    <a href="https://www.instagram.com/kodee_jewellery/" target="_blank" rel="noopener noreferrer"><span>Instagram</span><strong>@kodee_jewellery</strong></a>
   </div>
-</article>
-
-  {% endblock %} {% block script %}
-  <script src="/static/js/contact.js"></script>
-  {% endblock%}
+</section>
+{% endblock %}

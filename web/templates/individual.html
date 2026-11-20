@@ -1,134 +1,102 @@
 {% extends "base.html" %} {% block title%}
-<title>
-  Индивидуальные заказы — KoDee Desire - БРАСЛЕТЫ ЖЕЛАНИЙ | ЗОЛОТО 585 ПРОБЫ |
-  КОЛЬЕ НА ЛЕСКЕ | КАРАГАНДА
-</title>
+<title>Индивидуальная гравировка и украшения на заказ — KoDee Desire</title>
 {% endblock %} {% block style %}
 <link rel="stylesheet" href="/static/css/individual.css" />
 {% endblock style %} {% block body %}
 <div class="div100px"></div>
 <div id="bodyIndiv">
   <div id="indivTitle">
-    <h1>Индивидуаль&shy;ность — не&nbspтренд, а&nbspвыбор.</h1>
-    <h2>Создаём&nbspукрашения, которые рассказывают твою историю.</h2>
+    <h1>Индивидуальная гравировка и украшения на заказ</h1>
+    <h2>Имя, дата, фраза или рисунок на монетке. Украшение по вашей идее.</h2>
   </div>
   <div id="indiv1">
-    <div id="indiv1Div" class="indiv1Divs" style="margin-top: 50px">
+    <section class="indiv1Divs" aria-labelledby="individual-coin-title">
       <div class="indiv1divText">
-        <div class="indiv1text">
-          <h3 class="indivh3">Маленькая монета — большая история.</h3>
-          <h4>
-            Гравируем дату, фразу, имя или рисунок, которые значат что-то только
-            для тебя. <br />
-            Персональное украшение станет отражением особенного момента.
-          </h4>
-        </div>
+        <h3 id="individual-coin-title">Маленькая монета — большая история.</h3>
+        <p>Гравируем дату, слово, фразу, имя или рисунок, которые значат что-то только для тебя. Персональное украшение сохранит важные слова рядом и напомнит об особенном моменте.</p>
       </div>
-      <img
-        src="/static/image/con5/img5.webp"
-        id="indiv1img"
-        alt="Гравировка на монетке"
-        class="indiv1imgs"
-      />
-    </div>
-    <div class="indiv1Divs indivSec">
-      <h3 class="indivh3">Маленькая монета — большая история.</h3>
-      <h4>
-        Гравируем дату, слово, имя или фразу, которая значит что-то только для
-        тебя. Металл навсегда сохранит смысл, важный именно тебе.
-      </h4>
-    </div>
-    <div
-      class="indiv1Divs"
-      style="
-        width: 100%;
-        transform: translateX(100px);
-        background-color: transparent;
-      "
-    >
-      <div class="indiv2Div" id="indiv2Div">
-        <img
-          src="/static/image/body/obedinenie.webp"
-          class="indiv1imgs"
-          id="indiv2img"
-          alt="Объединение браслетов"
-        />
-        <div class="indiv1divText">
-          <div class="indiv1text">
-            <h3 class="indivh3">
-              Браслеты с историей не всегда должны быть порознь.
-            </h3>
-            <h4>
-              Мы объединяем два (или более) браслета в один: смысл, стиль и
-              энергия прошлых украшений — теперь в новом воплощении.
-            </h4>
-          </div>
-        </div>
+      <div class="individual-photo">
+        <img src="/static/image/con5/img5.webp" alt="Гравировка на монетке" />
       </div>
-    </div>
-    <div
-      class="indiv1Divs indivSec"
-      style="
-        width: 100%;
-        transform: translateX(100px);
-        background-color: transparent;
-      "
-    >
-      <div class="indiv2Div">
-        <div class="indiv1divText">
-          <h3 class="indivh3">
-            Браслеты с историей не всегда должны быть порознь.
-          </h3>
-          <h4>
-            Мы объединяем два (или больше) браслета в один: смысл, стиль и
-            энергия прошлых украшений — теперь в новом воплощении.
-          </h4>
-        </div>
+    </section>
+    <section class="indiv1Divs individual-photo-first" aria-labelledby="individual-bracelets-title">
+      <div class="individual-photo">
+        <img src="/static/image/body/obedinenie.webp" alt="Объединение браслетов" />
       </div>
-    </div>
-    <div id="indiv3Div" class="indiv1Divs">
       <div class="indiv1divText">
-        <div class="indiv1text">
-          <h3 class="indivh3">Хочешь браслет, которого точно нет ни у кого?</h3>
-          <h4>
-            Расскажи свою идею — мы воплотим её в жизнь. От 3D-эскиза до
-            готового изделия. <br />
-            Для тебя, про тебя, с тобой.
-          </h4>
-        </div>
+        <h3 id="individual-bracelets-title">Браслеты с историей не всегда должны быть порознь.</h3>
+        <p>Мы объединяем два (или более) браслета в один: смысл, стиль и энергия прошлых украшений — теперь в новом воплощении.</p>
       </div>
-      <img
-        src="/static/image/con5/img3.webp"
-        class="indiv1imgs"
-        id="indiv3img"
-        alt="Индивидуальный заказ"
-      />
-    </div>
-    <div class="indiv1Divs indivSec">
-      <h3 class="indivh3">Хочешь браслет, которого точно нет ни у кого?</h3>
-      <h4>
-        Расскажи свою идею — мы воплотим её в металл и форму. От 3D-эскиза до
-        живого изделия — под тебя, про тебя, с тобой.
-      </h4>
-    </div>
+    </section>
+    <section class="indiv1Divs" aria-labelledby="individual-custom-title">
+      <div class="indiv1divText">
+        <h3 id="individual-custom-title">Хочешь браслет по своей идее?</h3>
+        <p>Расскажи о задумке — обсудим форму, материал и следующий шаг.</p>
+      </div>
+      <div class="individual-photo">
+        <img src="/static/image/con5/img3.webp" alt="Индивидуальный заказ" />
+      </div>
+    </section>
   </div>
-  <a
-    href="https://wa.me/+77003360024"
-    target="_blank"
-    rel="noopener noreferrer"
-    data-aos="fade-up"
-    data-aos-delay="500"
-  >
-    <div class="con3Btn" style="color: var(--white)">
-      <span>Продолжить через WhatsApp ></span>
+
+  <section class="individual-ideas" id="examples" aria-labelledby="examples-title">
+    <p class="individual-eyebrow">Идеи для твоей истории</p>
+    <h2 id="examples-title">Примеры и идеи гравировки</h2>
+    <p>Карточки с пометкой «Будущий пример» ждут фотографий. Выбирай направление для вдохновения — детали обсудим вместе.</p>
+    <div class="examples-gallery" aria-label="Направления для гравировки">
+      <div class="examples-track" tabindex="0" aria-label="Примеры гравировки">
+        {% for example in engraving_examples %}
+        <article class="example-card" data-title="{{ example.title }}">
+          <div class="example-image">
+            <div class="example-placeholder"{% if example.image %} aria-hidden="true"{% endif %}><span class="example-disc" aria-hidden="true">{{ '%02d'|format(loop.index) }}</span><span>Будущий пример</span></div>
+            {% if example.image %}<button type="button" class="example-zoom" aria-label="Увеличить: {{ example.alt }}"><img src="{{ url_for('static', filename=example.image) }}" alt="{{ example.alt }}" loading="lazy" /></button>{% endif %}
+          </div>
+          <h3>{{ example.title }}</h3><p>{{ example.caption }}</p>
+        </article>
+        {% endfor %}
+      </div>
+      <div class="gallery-controls" hidden>
+        <div><button type="button" class="gallery-prev" aria-label="Предыдущий пример">‹</button><button type="button" class="gallery-next" aria-label="Следующий пример">›</button></div>
+        <span class="gallery-position" aria-live="polite"></span>
+        <button type="button" class="gallery-pause">Остановить</button>
+      </div>
     </div>
-  </a>
-  <a href="/shop" data-aos="fade-up" data-aos-delay="500">
-    <div class="con3Btn" style="color: var(--white); margin-top: 0">
-      <span>Каталог ></span>
-    </div>
-  </a>
+  </section>
+
+  <section class="coin-options" aria-labelledby="coin-options-title">
+    <p class="individual-eyebrow">Одна история — две стороны</p>
+    <h2 id="coin-options-title">Выбери свою монетку</h2>
+    <p>На одной стороне можно сохранить одну идею. Две стороны дают место для двух связанных деталей — их расположение обсудим вместе.</p>
+    <div class="coin-links">{% for coin in coins %}<a href="{{ url_for('web.product', slug=coin.slug) }}"><span>{{ product_display_name(coin) }}</span><strong>{{ format_price(coin.price) }} ₸</strong></a>{% endfor %}</div>
+    <a href="{{ url_for('web.category', category='Монеточка') }}">Сравнить монетки для гравировки</a>
+  </section>
+  <section class="request-section" id="request" aria-labelledby="request-title">
+    <p class="individual-eyebrow">Создадим вместе</p>
+    <h2 id="request-title">Расскажи о своей идее</h2>
+    <p>Поделись тем, что уже придумано. Остальное обсудим в переписке.</p>
+    <form id="individual-request" data-whatsapp-url="https://wa.me/77003360024" novalidate>
+      <fieldset><legend>Что ты хочешь создать?</legend>
+        <div class="request-choices"><label><input type="radio" name="kind" value="coin" checked> Гравировка на монетке</label><label><input type="radio" name="kind" value="other"> Другое украшение</label></div>
+      </fieldset>
+      <div id="coin-fields">
+        <fieldset><legend>Сколько сторон?</legend><div class="request-choices"><label><input type="radio" name="side" value="one" checked> Одна сторона</label><label><input type="radio" name="side" value="two"> Две стороны</label></div></fieldset>
+        <label for="side-one">Текст на первой стороне <span>необязательно</span></label><textarea id="side-one" rows="3"></textarea>
+        <div id="side-two-field" hidden><label for="side-two">Текст на второй стороне <span>необязательно</span></label><textarea id="side-two" rows="3"></textarea></div>
+        <label for="symbol">Символ, рисунок или пожелания к расположению <span>необязательно</span></label><textarea id="symbol" rows="3"></textarea>
+        <label for="example-choice">Понравившийся пример <span>необязательно</span></label><select id="example-choice"><option value="">Не выбран</option>{% for example in engraving_examples %}<option value="{{ example.title }}">{{ example.title }}</option>{% endfor %}</select>
+        <p class="request-hint">Можно описать только символ или рисунок. Размещение длинного текста согласуем при обсуждении.</p>
+      </div>
+      <div id="other-fields" hidden><label for="other-idea">Описание идеи</label><textarea id="other-idea" rows="4"></textarea><label for="other-wishes">Дополнительные пожелания <span>необязательно</span></label><textarea id="other-wishes" rows="3"></textarea></div>
+      <p class="request-error" id="request-error" role="alert" hidden></p>
+      <button type="submit" class="request-submit" disabled>Обсудить заказ в WhatsApp</button>
+      <p class="request-hint">Откроется WhatsApp с черновиком сообщения. Ты сможешь отправить его самостоятельно.</p>
+      <noscript><p>Для подготовки текста включи JavaScript или <a href="https://wa.me/77003360024" target="_blank" rel="noopener noreferrer">напиши нам в WhatsApp</a>.</p></noscript>
+    </form>
+  </section>
+  <dialog id="example-dialog" aria-label="Увеличенный пример гравировки"><button type="button" class="example-dialog-close" aria-label="Закрыть">✕</button><img alt="" /></dialog>
 </div>
 {% endblock body %} {% block script %}
-<script src="/static/js/individual.js" defer></script>
+<script src="/static/js/individual-intro.js" defer></script>
+<script src="/static/js/engraving.js" defer></script>
+<script src="/static/js/individual-request.js" defer></script>
 {% endblock script %}

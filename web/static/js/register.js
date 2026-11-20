@@ -10,25 +10,10 @@ document.addEventListener("DOMContentLoaded", () =>{
         body.style.background = `var(--add-bg)`;
     }, 300);
 
-    const links = document.querySelectorAll("a");
-    links.forEach(link => {
-        link.addEventListener("click", (e) => {
-            e.preventDefault(); // Отключаем мгновенный переход
-            const href = link.getAttribute("href");
-            // Прячем меню
-            body.style.transition = `opacity 0.6s linear`;
-            body.style.opacity = "0";
-            // Ждем окончания анимации и затем переходим
-            setTimeout(() => {
-                window.location.href = href; // Переход на новую страницу
-            }, 600);
-        });
-    });
-
     const emailInput = document.querySelector("#email");
       // Проверяем, есть ли сохранённый email в Local Storage
     const savedEmail = localStorage.getItem("savedEmail");
-    if (savedEmail) {
+    if (savedEmail && !emailInput.value) {
         emailInput.value = savedEmail; // Предзаполняем поле email
     }
     
@@ -95,18 +80,6 @@ document.addEventListener("DOMContentLoaded", () =>{
     }
 
     updateIconsByTheme(true);
-});
-
-form = document.querySelector("#regForm")
-
-form.addEventListener("submit", (e) => {
-    e.preventDefault(); // Останавливаем обычную отправку
-    body.style.transition = "opacity 0.5s ease"; 
-    body.style.opacity = "0"; // например, плавно исчезает
-
-    setTimeout(() => {
-        form.submit(); // теперь форма реально отправится после анимации
-    }, 500); // дожидаемся окончания анимации
 });
 
 let InpPass = document.querySelector('#password');
